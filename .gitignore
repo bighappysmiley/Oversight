@@ -7,3 +7,6 @@ mac-agent/config.json
 mac-agent/agent.log
 .env
 .env.local
+downloads/*.apk
+downloads/*.exe
+downloads/*.msi
