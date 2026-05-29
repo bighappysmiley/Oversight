@@ -248,8 +248,10 @@ class Agent:
 
     def push_usage(self):
         today = date.today().isoformat()
+        # Look up bundle_id from the last known running apps snapshot
+        bundle_map = {a["app_name"]: a.get("bundle_id", "") for a in get_running_apps()}
         app_usage = [
-            {"app_name": name, "duration_seconds": secs}
+            {"app_name": name, "bundle_id": bundle_map.get(name, ""), "duration_seconds": secs}
             for name, secs in self.app_usage.items()
         ]
         web_usage = get_browser_history_today()

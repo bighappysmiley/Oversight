@@ -11,6 +11,7 @@ const router = express.Router();
 router.get('/agent/settings', requireDeviceAuth, (req, res) => {
   const db = getDb();
   const settings = db.prepare('SELECT * FROM settings WHERE device_id = ?').get(req.device.id);
+  if (!settings) return res.status(404).json({ error: 'Settings not found' });
   res.json({
     app_limits: JSON.parse(settings.app_limits),
     downtime: JSON.parse(settings.downtime),
@@ -22,7 +23,9 @@ router.get('/agent/settings', requireDeviceAuth, (req, res) => {
 // Agent: push usage data
 router.post('/agent/usage', requireDeviceAuth, (req, res) => {
   const { app_usage, web_usage, date } = req.body;
-  if (!date) return res.status(400).json({ error: 'date required' });
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'date required in YYYY-MM-DD format' });
+  }
   const db = getDb();
 
   const upsertApp = db.prepare(`INSERT INTO usage_logs (device_id, app_name, bundle_id, duration_seconds, date)
@@ -85,6 +88,7 @@ router.get('/:id/settings', requireAuth, (req, res) => {
   const device = db.prepare('SELECT * FROM devices WHERE id = ? AND parent_id = ?').get(req.params.id, req.parent.id);
   if (!device) return res.status(404).json({ error: 'Device not found' });
   const settings = db.prepare('SELECT * FROM settings WHERE device_id = ?').get(device.id);
+  if (!settings) return res.status(404).json({ error: 'Settings not found' });
   res.json({
     app_limits: JSON.parse(settings.app_limits),
     downtime: JSON.parse(settings.downtime),
@@ -127,7 +131,7 @@ router.get('/:id/usage', requireAuth, (req, res) => {
   const appUsage = db.prepare(
     `SELECT app_name, bundle_id, SUM(duration_seconds) as total_seconds, date
      FROM usage_logs WHERE device_id = ? AND date >= ? AND date <= ?
-     GROUP BY app_name, date ORDER BY date, total_seconds DESC`
+     GROUP BY app_name, bundle_id, date ORDER BY date, total_seconds DESC`
   ).all(device.id, fromDate, toDate);
 
   const webUsage = db.prepare(
