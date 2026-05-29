@@ -46,4 +46,27 @@ export const api = {
     if (to) params.set('to', to);
     return req('GET', `/devices/${deviceId}/usage?${params}`);
   },
+
+  // Pairing
+  generatePairCode: (name) => req('POST', '/pair/generate', { name }),
+  getPairStatus: (code) => req('GET', `/pair/${code}/status`),
+
+  // Screen
+  getScreenFrame: (deviceId) => req('GET', `/devices/${deviceId}/screen`),
+  toggleScreenStream: (deviceId, enabled) => req('PUT', `/devices/${deviceId}/screen/toggle`, { enabled }),
+
+  // Import
+  importDomains: async (deviceId, file) => {
+    const token = getToken();
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch(`${BASE}/devices/${deviceId}/import/domains`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Import failed');
+    return data;
+  },
 };

@@ -17,6 +17,8 @@ export default function Restrictions() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [newDomain, setNewDomain] = useState('');
+  const [importMsg, setImportMsg] = useState('');
+  const [importError, setImportError] = useState('');
 
   useEffect(() => {
     if (!selected) return;
@@ -61,6 +63,23 @@ export default function Restrictions() {
     save(updated);
   }
 
+  async function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImportMsg('');
+    setImportError('');
+    try {
+      const result = await api.importDomains(selected.id, file);
+      setImportMsg(`Added ${result.added} domains (${result.total} total)`);
+      // Refresh restrictions from server
+      const s = await api.getSettings(selected.id);
+      setRestrictions(s.website_restrictions);
+    } catch (err) {
+      setImportError(err.message);
+    }
+    e.target.value = '';
+  }
+
   function setMode(mode) {
     const updated = { ...restrictions, mode };
     setRestrictions(updated);
@@ -102,6 +121,22 @@ export default function Restrictions() {
                 onClick={() => setMode('allowlist')}
               />
             </div>
+          </div>
+
+          <div style={styles.card}>
+            <h3 style={styles.sectionTitle}>Import from File</h3>
+            <p style={{ margin: '0 0 12px', fontSize: 13, color: '#6b7280' }}>
+              Upload a spreadsheet with one domain per row (first column). First row is treated as a header and skipped.
+              Accepted formats: <code>.xlsx</code>, <code>.xls</code>, <code>.csv</code>.
+            </p>
+            <input
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={handleImport}
+              style={{ fontSize: 14 }}
+            />
+            {importMsg && <p style={{ margin: '10px 0 0', fontSize: 13, color: '#166534', background: '#dcfce7', padding: '8px 12px', borderRadius: 6 }}>{importMsg}</p>}
+            {importError && <p style={{ margin: '10px 0 0', fontSize: 13, color: '#dc2626', background: '#fef2f2', padding: '8px 12px', borderRadius: 6 }}>{importError}</p>}
           </div>
 
           <div style={styles.card}>

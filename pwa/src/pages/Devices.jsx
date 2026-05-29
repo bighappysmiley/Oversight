@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useDevice } from '../hooks/useDevice';
 
 export default function Devices() {
   const { devices, refresh } = useDevice();
+  const navigate = useNavigate();
   const [newName, setNewName] = useState('');
   const [adding, setAdding] = useState(false);
   const [newDevice, setNewDevice] = useState(null);
@@ -49,27 +51,11 @@ export default function Devices() {
 
       <div style={styles.card}>
         <h3 style={styles.sectionTitle}>Add a Device</h3>
-        <form onSubmit={addDevice} style={styles.addForm}>
-          <input
-            style={styles.input}
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="e.g. Alex's MacBook"
-            required
-          />
-          <button type="submit" disabled={adding} style={styles.btn}>
-            {adding ? 'Adding…' : 'Add Device'}
-          </button>
-        </form>
+        <p style={{ margin: '0 0 16px', color: '#6b7280', fontSize: 14 }}>Use the guided pairing flow to connect a child's Mac in minutes.</p>
+        <button onClick={() => navigate('/add-device')} style={styles.btn}>
+          + Pair a New Device
+        </button>
         {error && <p style={styles.error}>{error}</p>}
-
-        {newDevice && (
-          <div style={styles.tokenBox}>
-            <p style={styles.tokenTitle}>✅ Device created! Copy this token and paste it into the Mac Agent config:</p>
-            <code style={styles.token}>{newDevice.token}</code>
-            <p style={styles.tokenNote}>This token will not be shown again. Keep it secret.</p>
-          </div>
-        )}
       </div>
 
       <div style={styles.card}>

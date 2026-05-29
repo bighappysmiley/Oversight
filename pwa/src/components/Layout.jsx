@@ -2,11 +2,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 const NAV = [
-  { to: '/', label: 'Dashboard', icon: '📊' },
+  { to: '/dashboard', label: 'Dashboard', icon: '📊' },
   { to: '/devices', label: 'Devices', icon: '💻' },
   { to: '/app-limits', label: 'App Limits', icon: '⏱️' },
   { to: '/downtime', label: 'Downtime', icon: '🌙' },
   { to: '/restrictions', label: 'Web Filter', icon: '🔒' },
+  { to: '/screen', label: 'Screen View', icon: '🖥️' },
 ];
 
 export default function Layout({ children }) {

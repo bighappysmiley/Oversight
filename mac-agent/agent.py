@@ -6,12 +6,15 @@ Requires: pip3 install requests
 Run with sudo for hosts-file editing: sudo python3 agent.py
 """
 
+import base64
+import hashlib
 import json
 import os
 import re
 import signal
 import subprocess
 import sys
+import threading
 import time
 import argparse
 import logging
@@ -47,6 +50,83 @@ def load_config():
         sys.exit(1)
     with open(CONFIG_PATH) as f:
         return json.load(f)
+
+
+def get_device_fingerprint():
+    """Return a stable device fingerprint based on hostname + MAC address."""
+    import socket
+    import uuid
+    hostname = socket.gethostname()
+    mac = ':'.join(('%012X' % uuid.getnode())[i:i+2] for i in range(0, 12, 2))
+    raw = f"{hostname}|{mac}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+
+def pair_device():
+    """Interactive pairing flow: claim a 6-digit code and save the device token."""
+    print("=== Oversight Device Pairing ===\n")
+
+    # Server URL
+    if CONFIG_PATH.exists():
+        with open(CONFIG_PATH) as f:
+            existing = json.load(f)
+        default_url = existing.get("server_url", "")
+        prompt = f"Enter your server URL [{default_url}]: "
+    else:
+        existing = {}
+        prompt = "Enter your server URL (e.g. https://oversight.example.com): "
+
+    server_url = input(prompt).strip()
+    if not server_url and existing.get("server_url"):
+        server_url = existing["server_url"]
+    server_url = server_url.rstrip("/")
+
+    if not server_url:
+        print("Server URL is required.")
+        sys.exit(1)
+
+    fingerprint = get_device_fingerprint()
+    code = input("Enter the 6-digit pairing code shown on the parent's device: ").strip()
+
+    if not code or len(code) != 6 or not code.isdigit():
+        print("Invalid pairing code. Must be 6 digits.")
+        sys.exit(1)
+
+    print(f"\nContacting {server_url} …")
+    try:
+        r = requests.post(
+            f"{server_url}/api/pair/claim",
+            json={"code": code, "device_fingerprint": fingerprint},
+            timeout=15,
+        )
+        r.raise_for_status()
+        data = r.json()
+    except requests.HTTPError as e:
+        try:
+            msg = e.response.json().get("error", str(e))
+        except Exception:
+            msg = str(e)
+        print(f"Pairing failed: {msg}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Connection error: {e}")
+        sys.exit(1)
+
+    config = {
+        **existing,
+        "server_url": server_url,
+        "device_id": data["device_id"],
+        "device_token": data["device_token"],
+    }
+    with open(CONFIG_PATH, "w") as f:
+        json.dump(config, f, indent=2)
+
+    print(f"\n✅ Device paired! Token saved to {CONFIG_PATH}")
+    print(f"   Device ID: {data['device_id']}")
+
+    run_install = input("\nInstall as a LaunchDaemon now? (requires sudo) [y/N]: ").strip().lower()
+    if run_install == "y":
+        install_launchd(CONFIG_PATH)
 
 
 def get_running_apps():
@@ -232,6 +312,10 @@ class Agent:
         self.last_settings_fetch = 0
         self.last_usage_push = 0
         self.last_hosts_update = ""
+        self.last_stream_check = 0
+        self.streaming_enabled = False
+        self._capture_thread = None
+        self._capture_stop = threading.Event()
 
     def fetch_settings(self):
         try:
@@ -319,6 +403,50 @@ class Agent:
                 update_hosts(restrictions)
             self.last_hosts_update = restrictions_key
 
+    def check_streaming(self):
+        """Poll the server to see if screen streaming is enabled."""
+        try:
+            r = requests.get(
+                f"{self.server}/api/devices/agent/screen/enabled",
+                headers={"X-Device-Token": self.token},
+                timeout=10,
+            )
+            r.raise_for_status()
+            enabled = r.json().get("enabled", False)
+            if enabled and not self.streaming_enabled:
+                log.info("Screen streaming enabled — starting capture thread")
+                self.streaming_enabled = True
+                self._capture_stop.clear()
+                self._capture_thread = threading.Thread(target=self._capture_loop, daemon=True)
+                self._capture_thread.start()
+            elif not enabled and self.streaming_enabled:
+                log.info("Screen streaming disabled — stopping capture thread")
+                self.streaming_enabled = False
+                self._capture_stop.set()
+        except Exception as e:
+            log.debug(f"Stream check failed: {e}")
+
+    def _capture_loop(self):
+        """Background thread: capture and upload a screen frame every 2 seconds."""
+        tmp = Path("/tmp/oversight_frame.jpg")
+        while not self._capture_stop.is_set():
+            try:
+                subprocess.run(
+                    ["screencapture", "-x", "-t", "jpg", "-m", str(tmp)],
+                    capture_output=True, timeout=5
+                )
+                if tmp.exists():
+                    frame_b64 = base64.b64encode(tmp.read_bytes()).decode()
+                    requests.post(
+                        f"{self.server}/api/devices/agent/screen",
+                        headers={"X-Device-Token": self.token, "Content-Type": "application/json"},
+                        json={"frame": frame_b64, "captured_at": int(time.time())},
+                        timeout=10,
+                    )
+            except Exception as e:
+                log.debug(f"Screen capture failed: {e}")
+            self._capture_stop.wait(2)
+
     def run(self):
         log.info(f"Oversight agent starting (dry_run={self.dry_run})")
         signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
@@ -330,6 +458,11 @@ class Agent:
             if now - self.last_settings_fetch >= 60:
                 self.fetch_settings()
                 self.last_settings_fetch = now
+
+            # Check streaming status every 30 seconds
+            if now - self.last_stream_check >= 30:
+                self.check_streaming()
+                self.last_stream_check = now
 
             self.enforce()
 
@@ -395,8 +528,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Oversight Mac Agent")
     parser.add_argument("--install", action="store_true", help="Install as LaunchDaemon (requires sudo)")
     parser.add_argument("--uninstall", action="store_true", help="Uninstall LaunchDaemon (requires sudo)")
+    parser.add_argument("--pair", action="store_true", help="Pair this device with a parent account using a 6-digit code")
     parser.add_argument("--dry-run", action="store_true", help="Monitor only; don't kill apps or edit hosts")
     args = parser.parse_args()
+
+    if args.pair:
+        pair_device()
+        sys.exit(0)
 
     if args.install:
         if os.geteuid() != 0:
