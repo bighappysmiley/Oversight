@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import Icon from '../components/Icon';
+import { firebaseLogin, firebaseRegister, isFirebaseConfigured } from '../lib/firebase';
 
 export default function Login() {
   const [mode, setMode] = useState('login');
@@ -19,13 +20,28 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const data = mode === 'login'
-        ? await api.login(email, password)
-        : await api.register(email, password, name);
+      let data;
+      if (isFirebaseConfigured) {
+        data = mode === 'login'
+          ? await firebaseLogin(email, password)
+          : await firebaseRegister(email, password, name);
+      } else {
+        data = mode === 'login'
+          ? await api.login(email, password)
+          : await api.register(email, password, name);
+      }
       login(data.token, data.parent);
       navigate('/');
     } catch (err) {
-      setError(err.message);
+      // Translate Firebase error codes to friendly messages
+      const msg = err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
+        ? 'Invalid email or password'
+        : err.code === 'auth/email-already-in-use'
+        ? 'An account with this email already exists'
+        : err.code === 'auth/weak-password'
+        ? 'Password must be at least 6 characters'
+        : err.message;
+      setError(msg);
     } finally {
       setLoading(false);
     }
