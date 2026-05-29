@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
+import Icon from '../components/Icon';
 
 export default function Login() {
   const [mode, setMode] = useState('login');
@@ -34,9 +35,10 @@ export default function Login() {
     <div style={styles.container}>
       <div style={styles.card}>
         <div style={styles.header}>
-          <span style={{ fontSize: 40 }}>👁️</span>
+          <Icon name="eye" size={48} color="#4f46e5" />
           <h1 style={styles.title}>Oversight</h1>
-          <p style={styles.subtitle}>Parental controls for your family's Mac</p>
+          <p style={styles.subtitle}>Parental controls for your family's devices</p>
+          <p style={{ margin: '4px 0 0', fontSize: 11, color: '#6b7280', letterSpacing: 1 }}>BY BIGHAPPYSMILEY</p>
         </div>
 
         <div style={styles.tabs}>
