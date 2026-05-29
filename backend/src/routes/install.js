@@ -245,4 +245,9 @@ router.get('/agent.py',         serveFile(path.join(AGENT_DIR, 'agent.py'),     
 router.get('/agent_windows.py', serveFile(path.join(AGENT_DIR, 'agent_windows.py'), 'agent_windows.py', 'text/plain'));
 router.get('/agent_linux.py',   serveFile(path.join(AGENT_DIR, 'agent_linux.py'),   'agent_linux.py',   'text/plain'));
 
+// Installer downloads — served via /api/install/ so they work in production without extra server config
+router.get('/mac',     serveFile(path.join(DOWNLOADS_DIR, 'oversight-mac.command'), 'oversight-mac.command', 'application/octet-stream'));
+router.get('/windows', serveFile(path.join(DOWNLOADS_DIR, 'oversight-windows.bat'), 'oversight-windows.bat', 'application/octet-stream'));
+router.get('/linux',   serveFile(path.join(DOWNLOADS_DIR, 'oversight-linux.sh'),    'oversight-linux.sh',    'application/octet-stream'));
+
 module.exports = router;
