@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, dbGet, dbRun } from '@/lib/db';
+import { db, deleteByDevice } from '@/lib/firestore';
 import { getParentFromRequest } from '@/lib/auth';
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const parent = getParentFromRequest(req);
   if (!parent) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const db = await getDb();
-  const device = dbGet(db, 'SELECT * FROM devices WHERE id = ? AND parent_id = ?', [params.id, parent.id]);
-  if (!device) return NextResponse.json({ error: 'Device not found' }, { status: 404 });
-  dbRun(db, 'DELETE FROM usage_logs WHERE device_id = ?', [device.id]);
-  dbRun(db, 'DELETE FROM web_logs WHERE device_id = ?', [device.id]);
-  dbRun(db, 'DELETE FROM screen_frames WHERE device_id = ?', [device.id]);
-  dbRun(db, 'DELETE FROM settings WHERE device_id = ?', [device.id]);
-  dbRun(db, 'DELETE FROM devices WHERE id = ?', [device.id]);
+  const deviceRef = db.collection('devices').doc(params.id);
+  const snap = await deviceRef.get();
+  if (!snap.exists || snap.data()?.parent_id !== parent.id) {
+    return NextResponse.json({ error: 'Device not found' }, { status: 404 });
+  }
+  await deleteByDevice('usage_logs', params.id);
+  await deleteByDevice('web_logs', params.id);
+  await db.collection('screen_frames').doc(params.id).delete();
+  await db.collection('settings').doc(params.id).delete();
+  await deviceRef.delete();
   return NextResponse.json({ ok: true });
 }

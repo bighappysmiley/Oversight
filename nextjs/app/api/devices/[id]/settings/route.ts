@@ -1,37 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, dbGet, dbRun } from '@/lib/db';
+import { db, getOwnedDevice, nowSeconds, DEFAULT_SETTINGS } from '@/lib/firestore';
 import { getParentFromRequest } from '@/lib/auth';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const parent = getParentFromRequest(req);
   if (!parent) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const db = await getDb();
-  const device = dbGet(db, 'SELECT * FROM devices WHERE id = ? AND parent_id = ?', [params.id, parent.id]);
+  const device = await getOwnedDevice(params.id, parent.id);
   if (!device) return NextResponse.json({ error: 'Device not found' }, { status: 404 });
-  const settings = dbGet(db, 'SELECT * FROM settings WHERE device_id = ?', [device.id]);
-  if (!settings) return NextResponse.json({ error: 'Settings not found' }, { status: 404 });
+  const snap = await db.collection('settings').doc(device.id).get();
+  const s = snap.exists ? snap.data()! : { ...DEFAULT_SETTINGS, updated_at: nowSeconds() };
   return NextResponse.json({
-    app_limits: JSON.parse(settings.app_limits),
-    downtime: JSON.parse(settings.downtime),
-    website_restrictions: JSON.parse(settings.website_restrictions),
-    updated_at: settings.updated_at,
+    app_limits: s.app_limits ?? DEFAULT_SETTINGS.app_limits,
+    downtime: s.downtime ?? DEFAULT_SETTINGS.downtime,
+    website_restrictions: s.website_restrictions ?? DEFAULT_SETTINGS.website_restrictions,
+    updated_at: s.updated_at ?? null,
   });
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const parent = getParentFromRequest(req);
   if (!parent) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const db = await getDb();
-  const device = dbGet(db, 'SELECT * FROM devices WHERE id = ? AND parent_id = ?', [params.id, parent.id]);
+  const device = await getOwnedDevice(params.id, parent.id);
   if (!device) return NextResponse.json({ error: 'Device not found' }, { status: 404 });
   const body = await req.json();
   const { app_limits, downtime, website_restrictions } = body;
-  const current = dbGet(db, 'SELECT * FROM settings WHERE device_id = ?', [device.id]);
-  dbRun(db, `UPDATE settings SET app_limits = ?, downtime = ?, website_restrictions = ?, updated_at = strftime('%s','now') WHERE device_id = ?`, [
-    JSON.stringify(app_limits ?? JSON.parse(current.app_limits)),
-    JSON.stringify(downtime ?? JSON.parse(current.downtime)),
-    JSON.stringify(website_restrictions ?? JSON.parse(current.website_restrictions)),
-    device.id,
-  ]);
+
+  const update: any = { updated_at: nowSeconds() };
+  if (app_limits !== undefined) update.app_limits = app_limits;
+  if (downtime !== undefined) update.downtime = downtime;
+  if (website_restrictions !== undefined) update.website_restrictions = website_restrictions;
+
+  await db.collection('settings').doc(device.id).set(update, { merge: true });
   return NextResponse.json({ ok: true });
 }
