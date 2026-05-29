@@ -5,6 +5,7 @@ import {
 import { api } from '../lib/api';
 import { useDevice } from '../hooks/useDevice';
 import DevicePicker from '../components/DevicePicker';
+import Icon from '../components/Icon';
 
 const COLORS = ['#4f46e5', '#7c3aed', '#2563eb', '#0891b2', '#059669', '#d97706', '#dc2626', '#db2777'];
 
@@ -84,10 +85,10 @@ export default function Dashboard() {
       ) : (
         <>
           <div style={styles.statRow}>
-            <StatCard label="Total Screen Time (7d)" value={formatTime(totalScreenTime)} icon="📱" />
-            <StatCard label="Apps Used" value={Object.keys(appTotals).length} icon="🖥️" />
-            <StatCard label="Sites Visited" value={Object.keys(webTotals).length} icon="🌐" />
-            <StatCard label="Days Tracked" value={dailyData.length} icon="📅" />
+            <StatCard label="Total Screen Time (7d)" value={formatTime(totalScreenTime)} icon="smartphone" />
+            <StatCard label="Apps Used" value={Object.keys(appTotals).length} icon="monitor" />
+            <StatCard label="Sites Visited" value={Object.keys(webTotals).length} icon="globe" />
+            <StatCard label="Days Tracked" value={dailyData.length} icon="barChart" />
           </div>
 
           <div style={styles.chartRow}>
@@ -165,7 +166,7 @@ export default function Dashboard() {
 function StatCard({ label, value, icon }) {
   return (
     <div style={styles.statCard}>
-      <span style={{ fontSize: 28 }}>{icon}</span>
+      <Icon name={icon} size={28} color="#4f46e5" />
       <div>
         <div style={styles.statValue}>{value}</div>
         <div style={styles.statLabel}>{label}</div>
