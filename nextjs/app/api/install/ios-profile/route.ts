@@ -9,17 +9,10 @@ function generateUUID() {
   });
 }
 
-function buildBase(req: NextRequest): string {
-  const proto = req.headers.get('x-forwarded-proto') || 'https';
-  const host = req.headers.get('host') || 'localhost:3000';
-  return `${proto}://${host}`;
-}
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get('token') || 'default';
-  const base = buildBase(req);
-  const dohUrl = `${base}/api/dns/${token}`;
+  const dohUrl = `https://oversight.bhswebsite.org/api/dns/${token}`;
   const ts = Date.now();
 
   const profile = `<?xml version="1.0" encoding="UTF-8"?>
@@ -70,7 +63,7 @@ export async function GET(req: NextRequest) {
   <key>PayloadVersion</key>
   <integer>1</integer>
   <key>PayloadRemovalDisallowed</key>
-  <false/>
+  <true/>
   <key>RemovalPassword</key>
   <string>${REMOVAL_PASSWORD}</string>
   <key>ConsentText</key>
@@ -85,6 +78,7 @@ export async function GET(req: NextRequest) {
     headers: {
       'Content-Type': 'application/x-apple-aspen-config',
       'Content-Disposition': 'attachment; filename="oversight-ios.mobileconfig"',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
     },
   });
 }

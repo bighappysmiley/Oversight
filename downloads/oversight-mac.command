@@ -1,140 +1,81 @@
 #!/bin/bash
-# Oversight Mac Installer — by BigHappySmiley
-# Double-click this file in Finder to install.
-
-set -e
+SERVER_URL="https://oversight.bhswebsite.org"
 cd "$(dirname "$0")"
 
-BOLD='\033[1m'
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m'
+# Welcome
+osascript -e 'display dialog "Welcome to Oversight.\n\nThis will install parental controls on this Mac. You will need the 6-digit pairing code from the parent dashboard." with title "Oversight Installer" buttons {"Cancel", "Continue"} default button "Continue" with icon note'
+[ $? -ne 0 ] && exit 0
 
-clear
-echo ""
-echo -e "${BOLD}  ████████████████████████████████████████████${NC}"
-echo -e "${BOLD}  █                                          █${NC}"
-echo -e "${BOLD}  █   O V E R S I G H T                     █${NC}"
-echo -e "${BOLD}  █   by BigHappySmiley                     █${NC}"
-echo -e "${BOLD}  █                                          █${NC}"
-echo -e "${BOLD}  ████████████████████████████████████████████${NC}"
-echo ""
-echo "  Parental controls installer for Mac"
-echo ""
+# Get pairing code
+PAIRING_CODE=$(osascript -e 'text returned of (display dialog "Enter the 6-digit pairing code shown in the parent dashboard under Add Device." default answer "" with title "Oversight \xe2\x80\x94 Step 1 of 2" buttons {"Cancel", "Install"} default button "Install")')
+[ $? -ne 0 ] && exit 0
 
-# ── Collect info ─────────────────────────────────────────────────────────────
-SERVER_URL="https://oversight.bhswebsite.org"
+# Validate
+if ! echo "$PAIRING_CODE" | grep -qE '^[0-9]{6}$'; then
+  osascript -e 'display alert "Invalid Code" message "Please enter exactly 6 digits." as critical buttons {"OK"} default button "OK"'
+  exit 1
+fi
 
-PAIRING_CODE=""
-while [ -z "$PAIRING_CODE" ]; do
-  echo -ne "${BLUE}  Step 1/2 — Enter the 6-digit pairing code${NC}\n"
-  echo -ne "  (shown in the parent dashboard under Add Device): "
-  read PAIRING_CODE
-  if [[ ! "$PAIRING_CODE" =~ ^[0-9]{6}$ ]]; then
-    echo -e "  ${RED}Must be exactly 6 digits${NC}"
-    PAIRING_CODE=""
-  fi
-done
+notify() { osascript -e "display notification \"$1\" with title \"Oversight\"" 2>/dev/null; }
+alert_error() { osascript -e "display alert \"Installation Failed\" message \"$1\" as critical buttons {\"OK\"} default button \"OK\""; }
 
-echo ""
-echo -e "${YELLOW}  Step 2/2 — Installing Oversight...${NC}"
-echo ""
+notify "Installing Oversight... (this may take a minute)"
 
 INSTALL_DIR="$HOME/.oversight"
 mkdir -p "$INSTALL_DIR"
 
-# ── Python check ─────────────────────────────────────────────────────────────
-echo -n "  Checking Python 3... "
+# Python check + deps (silent)
 if ! command -v python3 &>/dev/null; then
-  echo ""
-  echo -e "  ${RED}Python 3 not found. Installing via Homebrew...${NC}"
-  if ! command -v brew &>/dev/null; then
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  fi
-  brew install python3 --quiet
-fi
-echo -e "${GREEN}ok${NC}"
-
-# ── Install Python deps ───────────────────────────────────────────────────────
-echo -n "  Installing dependencies... "
-pip3 install requests --quiet --break-system-packages 2>/dev/null || pip3 install requests --quiet
-echo -e "${GREEN}ok${NC}"
-
-# ── Download agent ────────────────────────────────────────────────────────────
-echo -n "  Downloading Oversight agent... "
-if curl -fsSL "$SERVER_URL/api/install/agent.py" -o "$INSTALL_DIR/agent.py" 2>/dev/null; then
-  echo -e "${GREEN}ok${NC}"
-elif [ -f "$(dirname "$0")/agent.py" ]; then
-  cp "$(dirname "$0")/agent.py" "$INSTALL_DIR/agent.py"
-  echo -e "${GREEN}ok (local copy)${NC}"
-else
-  echo -e "${RED}failed${NC}"
-  echo "  Could not reach the server. Check the URL and try again."
-  read -p "  Press Enter to close..."
+  alert_error "Python 3 is required but not installed. Please install it from python.org and try again."
   exit 1
 fi
 
-# ── Write initial config ──────────────────────────────────────────────────────
-echo -n "  Saving configuration... "
+pip3 install requests --quiet --break-system-packages 2>/dev/null || pip3 install requests --quiet 2>/dev/null
+
+# Download agent
+if ! curl -fsSL "$SERVER_URL/api/install/agent.py" -o "$INSTALL_DIR/agent.py" 2>/dev/null; then
+  alert_error "Could not reach the Oversight server. Check your internet connection and try again."
+  exit 1
+fi
+
+# Write config
 cat > "$INSTALL_DIR/config.json" <<JSON
-{
-  "server_url": "$SERVER_URL",
-  "device_token": ""
-}
+{"server_url": "$SERVER_URL", "device_token": ""}
 JSON
-echo -e "${GREEN}ok${NC}"
 
-# ── Pair device ───────────────────────────────────────────────────────────────
-echo -n "  Pairing with parent account... "
+notify "Pairing with parent account..."
+
+# Pair
 cd "$INSTALL_DIR"
-if python3 agent.py --pair-code "$PAIRING_CODE" 2>/dev/null; then
-  echo -e "${GREEN}paired${NC}"
-else
-  echo -e "${RED}failed${NC}"
-  echo ""
-  echo "  The pairing code may have expired. Generate a new one in the"
-  echo "  parent dashboard and run this installer again."
-  read -p "  Press Enter to close..."
+PAIR_OUTPUT=$(python3 agent.py --pair-code "$PAIRING_CODE" 2>&1)
+if [ $? -ne 0 ]; then
+  alert_error "Pairing failed. The code may have expired. Generate a new code in the parent dashboard and try again."
   exit 1
 fi
 
-# ── Download + install MDM profile ───────────────────────────────────────────
-echo -n "  Downloading security profile... "
+notify "Installing background service..."
+
+# Install LaunchDaemon (needs sudo — osascript handles the password prompt natively)
+osascript -e "do shell script \"python3 '$INSTALL_DIR/agent.py' --install\" with administrator privileges"
+if [ $? -ne 0 ]; then
+  alert_error "Could not install the background service. Please try again."
+  exit 1
+fi
+
+notify "Installing web filter profile..."
+
+# Download + open MDM profile
 DEVICE_TOKEN=$(python3 -c "import json; d=json.load(open('$INSTALL_DIR/config.json')); print(d.get('device_token',''))" 2>/dev/null || echo "")
 PROFILE_URL="$SERVER_URL/api/install/mac-profile"
 [ -n "$DEVICE_TOKEN" ] && PROFILE_URL="${PROFILE_URL}?token=${DEVICE_TOKEN}"
-
 PROFILE_PATH="/tmp/oversight.mobileconfig"
+
 if curl -fsSL "$PROFILE_URL" -o "$PROFILE_PATH" 2>/dev/null; then
-  echo -e "${GREEN}ok${NC}"
-  echo ""
-  echo -e "  ${YELLOW}Installing the Oversight security profile...${NC}"
-  echo "  macOS will open System Settings. Click 'Install' and enter"
-  echo "  your admin password when prompted."
-  echo ""
-  # Open profile — macOS opens the Profiles pane in System Settings automatically
   open "$PROFILE_PATH"
-  echo -e "  ${BLUE}Complete the installation in System Settings, then press Enter here.${NC}"
-  read -p "  > "
+  osascript -e 'display dialog "Almost done!\n\nmacOS has opened System Settings. Click \"Install\" and enter your admin password to activate the web filter.\n\nThis profile prevents the filter from being removed without a passcode." with title "Oversight \xe2\x80\x94 Step 2 of 2" buttons {"Done"} default button "Done" with icon note'
 else
-  echo -e "${YELLOW}skipped (DNS filtering unavailable — check server URL)${NC}"
+  # Profile download failed but agent is installed — not fatal
+  osascript -e 'display dialog "Oversight is installed!\n\nNote: The web filter profile could not be downloaded. You can install it later from the parent dashboard." with title "Oversight" buttons {"OK"} default button "OK" with icon note'
 fi
 
-# ── Install LaunchDaemon ──────────────────────────────────────────────────────
-echo ""
-echo "  Installing as a background service (requires admin password)..."
-sudo python3 "$INSTALL_DIR/agent.py" --install
-
-# ── Done ──────────────────────────────────────────────────────────────────────
-echo ""
-echo -e "${GREEN}  ✓ Oversight installed successfully!${NC}"
-echo ""
-echo "  The monitoring agent will start automatically on every boot."
-echo "  Your parent can manage settings from the dashboard."
-echo ""
-echo "  To uninstall:"
-echo "    sudo python3 ~/.oversight/agent.py --uninstall"
-echo ""
-read -p "  Press Enter to close..."
+osascript -e 'display notification "Oversight is active and protecting this Mac." with title "Oversight" subtitle "Installation complete"'
