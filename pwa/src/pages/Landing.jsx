@@ -28,7 +28,7 @@ function ChildPanel() {
         <p style={s.panelText}>
           Download the Oversight profile — it sets up DNS filtering to block websites across every browser on this device.
         </p>
-        <a href="/api/install/ios-profile" style={s.bigDownloadBtn}>
+        <a href="/api/install/ios-profile" download="oversight-ios.mobileconfig" style={s.bigDownloadBtn}>
           <Icon name="download" size={18} color="#fff" />
           <span>Download iOS Profile</span>
         </a>
@@ -49,7 +49,7 @@ function ChildPanel() {
         <p style={s.panelText}>
           Download the Oversight app and install it to monitor and control this device.
         </p>
-        <a href="/download/oversight.apk" style={s.bigDownloadBtn}>
+        <a href="/download/oversight.apk" download="oversight.apk" style={s.bigDownloadBtn}>
           <Icon name="download" size={18} color="#fff" />
           <span>Download Android APK</span>
         </a>
@@ -73,7 +73,7 @@ function ChildPanel() {
         <p style={s.panelText}>
           Download the Oversight installer and run it to set up monitoring on this device.
         </p>
-        <a href="/download/oversight-windows.bat" style={s.bigDownloadBtn}>
+        <a href="/download/oversight-windows.bat" download="oversight-windows.bat" style={s.bigDownloadBtn}>
           <Icon name="download" size={18} color="#fff" />
           <span>Download Windows Installer</span>
         </a>
@@ -93,7 +93,7 @@ function ChildPanel() {
         <p style={s.panelText}>
           Download the Linux agent and run it to set up monitoring on this device.
         </p>
-        <a href="/download/oversight-linux.sh" style={s.bigDownloadBtn}>
+        <a href="/download/oversight-linux.sh" download="oversight-linux.sh" style={s.bigDownloadBtn}>
           <Icon name="download" size={18} color="#fff" />
           <span>Download Linux Installer</span>
         </a>
@@ -113,7 +113,7 @@ function ChildPanel() {
       <p style={s.panelText}>
         Download the Oversight installer and double-click it to set up monitoring on this Mac.
       </p>
-      <a href="/download/oversight-mac.command" style={s.bigDownloadBtn}>
+      <a href="/download/oversight-mac.command" download="oversight-mac.command" style={s.bigDownloadBtn}>
         <Icon name="download" size={18} color="#fff" />
         <span>Download Mac Installer</span>
       </a>
