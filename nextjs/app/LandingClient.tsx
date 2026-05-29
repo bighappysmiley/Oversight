@@ -84,13 +84,19 @@ function ChildPanel() {
   return (
     <div style={s.platformPanel}>
       <h3 style={s.panelTitle}>Install on Mac</h3>
-      <p style={s.panelText}>Download the Oversight installer and double-click it to set up monitoring on this Mac.</p>
-      <a href="/downloads/oversight-mac.zip" download="oversight-mac.zip" style={s.bigDownloadBtn}>
-        <Icon name="download" size={18} color="#fff" />
-        <span>Download Mac Installer</span>
-      </a>
+      <p style={s.panelText}>Choose your Mac's chip, then double-click the installer to set up monitoring. Not sure? Click the Apple menu → About This Mac — Apple Silicon Macs list an "Apple M1/M2/M3" chip.</p>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+        <a href="/downloads/oversight-mac-apple-silicon.dmg" download="oversight-mac-apple-silicon.dmg" style={s.bigDownloadBtn}>
+          <Icon name="download" size={18} color="#fff" />
+          <span>Apple Silicon (M1/M2/M3)</span>
+        </a>
+        <a href="/downloads/oversight-mac-intel.dmg" download="oversight-mac-intel.dmg" style={s.bigDownloadBtn}>
+          <Icon name="download" size={18} color="#fff" />
+          <span>Intel Mac</span>
+        </a>
+      </div>
       <ol style={s.stepsList}>
-        <li>Open your Downloads folder and double-click <code style={s.inlineCode}>oversight-mac.zip</code> to unzip it</li>
+        <li>Open your Downloads folder and double-click the <code style={s.inlineCode}>.dmg</code> to open it</li>
         <li><strong>Right-click</strong> <code style={s.inlineCode}>Oversight Installer</code> → <strong>Open</strong></li>
         <li>Click <strong>"Open"</strong> in the security popup</li>
         <li>Enter the pairing code shown on your parent's device</li>
