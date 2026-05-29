@@ -25,14 +25,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
-        const p: Parent = {
-          id: user.uid,
-          email: user.email!,
-          name: user.displayName || user.email!.split('@')[0],
-        };
-        setParent(p);
-        localStorage.setItem('oversight_parent', JSON.stringify(p));
-        user.getIdToken().then((t) => localStorage.setItem('oversight_token', t));
+        // Exchange Firebase ID token for an app JWT
+        user.getIdToken().then(async (idToken) => {
+          try {
+            const res = await fetch('/api/auth/firebase', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ idToken, name: user.displayName || user.email!.split('@')[0] }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              localStorage.setItem('oversight_token', data.token);
+              localStorage.setItem('oversight_parent', JSON.stringify(data.parent));
+              setParent(data.parent);
+              setLoading(false);
+              return;
+            }
+          } catch {}
+          // Fallback: use stored session
+          const stored = localStorage.getItem('oversight_parent');
+          if (stored) {
+            try { setParent(JSON.parse(stored)); } catch {}
+          }
+          setLoading(false);
+        });
+        return;
       } else {
         // Try stored session
         const stored = localStorage.getItem('oversight_parent');

@@ -21,9 +21,19 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const data = mode === 'login'
+      const firebaseData = mode === 'login'
         ? await firebaseLogin(email, password)
         : await firebaseRegister(email, password, name);
+
+      // Exchange Firebase ID token for an app JWT
+      const res = await fetch('/api/auth/firebase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: firebaseData.token, name: firebaseData.parent.name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Authentication failed');
+
       login(data.token, data.parent);
       router.push('/dashboard');
     } catch (err: any) {
