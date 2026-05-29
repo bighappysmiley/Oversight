@@ -23,9 +23,30 @@ from pathlib import Path
 
 try:
     import requests
+    _HAS_REQUESTS = True
 except ImportError:
-    print("Install requests: pip3 install requests")
-    sys.exit(1)
+    _HAS_REQUESTS = False
+    import urllib.request
+    import urllib.error
+
+def _http_post_json(url, payload, timeout=15):
+    """Post JSON and return parsed response dict. Works with or without requests."""
+    body = json.dumps(payload).encode()
+    if _HAS_REQUESTS:
+        r = requests.post(url, json=payload, timeout=timeout)
+        r.raise_for_status()
+        return r.json()
+    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        body = e.read()
+        try:
+            msg = json.loads(body).get("error", str(e))
+        except Exception:
+            msg = str(e)
+        raise RuntimeError(msg) from e
 
 CONFIG_PATH = Path(__file__).parent / "config.json"
 PLIST_PATH = Path("/Library/LaunchDaemons/com.oversight.agent.plist")
@@ -97,22 +118,12 @@ def pair_device(pair_code=None):
 
     print(f"\nContacting {server_url} …")
     try:
-        r = requests.post(
+        data = _http_post_json(
             f"{server_url}/api/pair/claim",
-            json={"code": code, "device_fingerprint": fingerprint},
-            timeout=15,
+            {"code": code, "device_fingerprint": fingerprint},
         )
-        r.raise_for_status()
-        data = r.json()
-    except requests.HTTPError as e:
-        try:
-            msg = e.response.json().get("error", str(e))
-        except Exception:
-            msg = str(e)
-        print(f"Pairing failed: {msg}")
-        sys.exit(1)
     except Exception as e:
-        print(f"Connection error: {e}")
+        print(f"Pairing failed: {e}")
         sys.exit(1)
 
     config = {
