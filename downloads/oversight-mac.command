@@ -68,10 +68,14 @@ JSON
 # Pair
 notify "Pairing with parent account..."
 cd "$INSTALL_DIR" || fail "Could not open the install folder."
-PAIR_OUT=$("$PYBIN" agent.py --pair-code "$PAIRING_CODE" 2>>"$LOG")
-if [ $? -ne 0 ]; then
-  log "Pair output: $PAIR_OUT"
-  fail "Pairing failed. The code may have expired — generate a new one in the parent dashboard and try again."
+PAIR_OUT=$("$PYBIN" agent.py --pair-code "$PAIRING_CODE" 2>&1)
+PAIR_EXIT=$?
+log "Pair exit=$PAIR_EXIT output=$PAIR_OUT"
+if [ $PAIR_EXIT -ne 0 ]; then
+  # Extract the meaningful error line (first line that starts with "Pairing failed:" or "Connection error:").
+  PAIR_ERR=$(echo "$PAIR_OUT" | grep -E "^(Pairing failed|Connection error):" | head -1)
+  [ -z "$PAIR_ERR" ] && PAIR_ERR=$(echo "$PAIR_OUT" | tail -1)
+  fail "Pairing failed: ${PAIR_ERR}\n\nMake sure you generated the code in the parent dashboard under Add Device, and enter it within 10 minutes."
 fi
 log "Paired successfully"
 
