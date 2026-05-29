@@ -25,22 +25,11 @@ echo "  Parental controls installer for Mac"
 echo ""
 
 # ── Collect info ─────────────────────────────────────────────────────────────
-SERVER_URL=""
-while [ -z "$SERVER_URL" ]; do
-  echo -ne "${BLUE}  Step 1/3 — Enter your Oversight server URL${NC}\n"
-  echo -ne "  (e.g. https://oversight.yourdomain.com): "
-  read SERVER_URL
-  SERVER_URL="${SERVER_URL%/}"
-  if [[ ! "$SERVER_URL" =~ ^https?:// ]]; then
-    echo -e "  ${RED}Must start with http:// or https://${NC}"
-    SERVER_URL=""
-  fi
-done
+SERVER_URL="https://oversight.bhswebsite.org"
 
-echo ""
 PAIRING_CODE=""
 while [ -z "$PAIRING_CODE" ]; do
-  echo -ne "${BLUE}  Step 2/3 — Enter the 6-digit pairing code${NC}\n"
+  echo -ne "${BLUE}  Step 1/2 — Enter the 6-digit pairing code${NC}\n"
   echo -ne "  (shown in the parent dashboard under Add Device): "
   read PAIRING_CODE
   if [[ ! "$PAIRING_CODE" =~ ^[0-9]{6}$ ]]; then
@@ -50,7 +39,7 @@ while [ -z "$PAIRING_CODE" ]; do
 done
 
 echo ""
-echo -e "${YELLOW}  Step 3/3 — Installing Oversight...${NC}"
+echo -e "${YELLOW}  Step 2/2 — Installing Oversight...${NC}"
 echo ""
 
 INSTALL_DIR="$HOME/.oversight"
