@@ -62,7 +62,7 @@ def get_device_fingerprint():
     return hashlib.sha256(raw.encode()).hexdigest()[:32]
 
 
-def pair_device():
+def pair_device(pair_code=None):
     """Interactive pairing flow: claim a 6-digit code and save the device token."""
     print("=== Oversight Device Pairing ===\n")
 
@@ -76,7 +76,7 @@ def pair_device():
         existing = {}
         prompt = "Enter your server URL (e.g. https://oversight.example.com): "
 
-    server_url = input(prompt).strip()
+    server_url = input(prompt).strip() if pair_code is None else existing.get("server_url", "")
     if not server_url and existing.get("server_url"):
         server_url = existing["server_url"]
     server_url = server_url.rstrip("/")
@@ -86,7 +86,10 @@ def pair_device():
         sys.exit(1)
 
     fingerprint = get_device_fingerprint()
-    code = input("Enter the 6-digit pairing code shown on the parent's device: ").strip()
+    if pair_code is not None:
+        code = pair_code.strip()
+    else:
+        code = input("Enter the 6-digit pairing code shown on the parent's device: ").strip()
 
     if not code or len(code) != 6 or not code.isdigit():
         print("Invalid pairing code. Must be 6 digits.")
@@ -529,8 +532,13 @@ if __name__ == "__main__":
     parser.add_argument("--install", action="store_true", help="Install as LaunchDaemon (requires sudo)")
     parser.add_argument("--uninstall", action="store_true", help="Uninstall LaunchDaemon (requires sudo)")
     parser.add_argument("--pair", action="store_true", help="Pair this device with a parent account using a 6-digit code")
+    parser.add_argument("--pair-code", help="Pair with this code non-interactively")
     parser.add_argument("--dry-run", action="store_true", help="Monitor only; don't kill apps or edit hosts")
     args = parser.parse_args()
+
+    if args.pair_code:
+        pair_device(pair_code=args.pair_code)
+        sys.exit(0)
 
     if args.pair:
         pair_device()

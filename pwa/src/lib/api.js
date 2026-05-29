@@ -58,6 +58,9 @@ export const api = {
   // Waitlist
   joinWaitlist: (email, platform) => req('POST', '/auth/waitlist', { email, platform }),
 
+  // iOS profile
+  getIosProfileUrl: (deviceToken) => `${BASE}/install/ios-profile${deviceToken ? '?token=' + deviceToken : ''}`,
+
   // Import
   importDomains: async (deviceId, file) => {
     const token = getToken();
