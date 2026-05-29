@@ -17,7 +17,11 @@ app.use('/api/pair', require('./routes/pair'));
 app.use('/api/devices', require('./routes/screen'));
 app.use('/api/devices', require('./routes/import'));
 app.use('/api/install', require('./routes/install'));
-app.use('/api/dns', require('./routes/install'));
+// DNS-over-HTTPS resolver used by mobileconfig profiles
+app.use('/api/dns', (req, res, next) => {
+  req.url = '/dns' + req.url;
+  require('./routes/install')(req, res, next);
+});
 
 // Serve downloadable installer files
 app.use('/download', express.static(path.join(__dirname, '../../downloads')));
