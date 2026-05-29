@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { getDb } = require('./db/schema');
 
 const app = express();
@@ -15,6 +16,11 @@ app.use('/api/devices', require('./routes/devices'));
 app.use('/api/pair', require('./routes/pair'));
 app.use('/api/devices', require('./routes/screen'));
 app.use('/api/devices', require('./routes/import'));
+app.use('/api/install', require('./routes/install'));
+app.use('/api/dns', require('./routes/install'));
+
+// Serve downloadable installer files
+app.use('/download', express.static(path.join(__dirname, '../../downloads')));
 
 app.get('/api/health', (req, res) => res.json({ ok: true, version: '1.0.0' }));
 
