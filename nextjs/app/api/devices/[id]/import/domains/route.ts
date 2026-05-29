@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, dbGet, dbRun } from '@/lib/db';
+import { db, getOwnedDevice, nowSeconds, DEFAULT_SETTINGS } from '@/lib/firestore';
 import { getParentFromRequest } from '@/lib/auth';
 
 function cleanDomain(raw: string): string | null {
@@ -25,8 +25,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Unsupported file type. Use .xlsx, .xls, or .csv' }, { status: 400 });
   }
 
-  const db = await getDb();
-  const device = dbGet(db, 'SELECT * FROM devices WHERE id = ? AND parent_id = ?', [params.id, parent.id]);
+  const device = await getOwnedDevice(params.id, parent.id);
   if (!device) return NextResponse.json({ error: 'Device not found' }, { status: 404 });
 
   let workbook: any;
@@ -49,16 +48,16 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (domain) imported.push(domain);
   }
 
-  const settings = dbGet(db, 'SELECT * FROM settings WHERE device_id = ?', [device.id]);
-  const restrictions = JSON.parse(settings.website_restrictions);
+  const settingsRef = db.collection('settings').doc(device.id);
+  const snap = await settingsRef.get();
+  const restrictions = (snap.exists && snap.data()?.website_restrictions) || { ...DEFAULT_SETTINGS.website_restrictions };
   const existing = new Set<string>(restrictions.domains || []);
   let added = 0;
   for (const d of imported) {
     if (!existing.has(d)) { existing.add(d); added++; }
   }
   restrictions.domains = Array.from(existing);
-  dbRun(db, `UPDATE settings SET website_restrictions = ?, updated_at = strftime('%s','now') WHERE device_id = ?`,
-    [JSON.stringify(restrictions), device.id]);
+  await settingsRef.set({ website_restrictions: restrictions, updated_at: nowSeconds() }, { merge: true });
 
   return NextResponse.json({ added, total: restrictions.domains.length, domains_preview: restrictions.domains.slice(0, 10) });
 }

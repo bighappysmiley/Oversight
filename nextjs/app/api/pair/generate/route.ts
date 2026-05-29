@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, dbRun } from '@/lib/db';
+import { db, nowSeconds } from '@/lib/firestore';
 import { getParentFromRequest } from '@/lib/auth';
 
 function randomCode() {
@@ -12,13 +12,29 @@ export async function POST(req: NextRequest) {
   const { name } = await req.json();
   if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 });
 
-  const db = await getDb();
-  dbRun(db, "DELETE FROM pair_codes WHERE expires_at < strftime('%s','now')", []);
+  // Best-effort cleanup of expired, unclaimed codes.
+  const now = nowSeconds();
+  const expired = await db
+    .collection('pair_codes')
+    .where('expires_at', '<', now)
+    .get();
+  if (!expired.empty) {
+    const batch = db.batch();
+    expired.docs.forEach((d) => {
+      if (!d.data().claimed_at) batch.delete(d.ref);
+    });
+    await batch.commit();
+  }
 
   const code = randomCode();
-  const expires_at = Math.floor(Date.now() / 1000) + 600;
-  dbRun(db, 'INSERT INTO pair_codes (code, parent_id, device_name, expires_at) VALUES (?, ?, ?, ?)',
-    [code, parent.id, name, expires_at]);
+  const expires_at = now + 600;
+  await db.collection('pair_codes').doc(code).set({
+    parent_id: parent.id,
+    device_name: name,
+    device_id: null,
+    claimed_at: null,
+    expires_at,
+  });
 
   return NextResponse.json({ code, expires_at });
 }

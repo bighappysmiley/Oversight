@@ -1,34 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, dbGet, dbRun } from '@/lib/db';
+import { db, getDeviceByToken, nowSeconds } from '@/lib/firestore';
 import { getDeviceTokenFromRequest } from '@/lib/auth';
+
+function sanitizeId(s: string): string {
+  // Firestore doc ids cannot contain '/'. Replace any to keep ids stable.
+  return s.replace(/\//g, '_');
+}
 
 export async function POST(req: NextRequest) {
   const token = getDeviceTokenFromRequest(req);
   if (!token) return NextResponse.json({ error: 'Missing device token' }, { status: 401 });
-  const db = await getDb();
-  const device = dbGet(db, 'SELECT * FROM devices WHERE token = ?', [token]);
+  const device = await getDeviceByToken(token);
   if (!device) return NextResponse.json({ error: 'Unknown device' }, { status: 401 });
-  dbRun(db, "UPDATE devices SET last_seen = strftime('%s','now') WHERE id = ?", [device.id]);
+  await db.collection('devices').doc(device.id).set({ last_seen: nowSeconds() }, { merge: true });
 
   const { app_usage, web_usage, date } = await req.json();
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return NextResponse.json({ error: 'date required in YYYY-MM-DD format' }, { status: 400 });
   }
 
+  const batch = db.batch();
   for (const entry of (app_usage || [])) {
-    dbRun(db, `INSERT INTO usage_logs (device_id, app_name, bundle_id, duration_seconds, date)
-      VALUES (?, ?, ?, ?, ?)
-      ON CONFLICT(device_id, app_name, date) DO UPDATE SET
-        duration_seconds = MAX(duration_seconds, excluded.duration_seconds)`,
-      [device.id, entry.app_name, entry.bundle_id || null, entry.duration_seconds, date]);
+    if (!entry?.app_name) continue;
+    const id = sanitizeId(`${device.id}_${date}_${entry.app_name}`);
+    const ref = db.collection('usage_logs').doc(id);
+    batch.set(ref, {
+      device_id: device.id,
+      app_name: entry.app_name,
+      bundle_id: entry.bundle_id || null,
+      duration_seconds: Number(entry.duration_seconds || 0),
+      date,
+      recorded_at: nowSeconds(),
+    });
   }
   for (const entry of (web_usage || [])) {
-    dbRun(db, `INSERT INTO web_logs (device_id, domain, visits, date)
-      VALUES (?, ?, ?, ?)
-      ON CONFLICT(device_id, domain, date) DO UPDATE SET
-        visits = MAX(visits, excluded.visits)`,
-      [device.id, entry.domain, entry.visits || 1, date]);
+    if (!entry?.domain) continue;
+    const id = sanitizeId(`${device.id}_${date}_${entry.domain}`);
+    const ref = db.collection('web_logs').doc(id);
+    batch.set(ref, {
+      device_id: device.id,
+      domain: entry.domain,
+      visits: Number(entry.visits || 1),
+      date,
+      recorded_at: nowSeconds(),
+    });
   }
+  await batch.commit();
 
   return NextResponse.json({ ok: true });
 }

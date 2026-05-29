@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, dbGet } from '@/lib/db';
+import { db, getDeviceByToken, DEFAULT_SETTINGS } from '@/lib/firestore';
 
 async function getDeviceSettings(token: string) {
   if (!token || token === 'default') return { domains: [], mode: 'blocklist' };
   try {
-    const db = await getDb();
-    const device = dbGet(db, 'SELECT * FROM devices WHERE token = ?', [token]);
+    const device = await getDeviceByToken(token);
     if (!device) return { domains: [], mode: 'blocklist' };
-    const settings = dbGet(db, 'SELECT * FROM settings WHERE device_id = ?', [device.id]);
-    if (!settings) return { domains: [], mode: 'blocklist' };
-    return JSON.parse(settings.website_restrictions);
+    const snap = await db.collection('settings').doc(device.id).get();
+    if (!snap.exists) return { domains: [], mode: 'blocklist' };
+    return snap.data()?.website_restrictions || { ...DEFAULT_SETTINGS.website_restrictions };
   } catch {
     return { domains: [], mode: 'blocklist' };
   }
