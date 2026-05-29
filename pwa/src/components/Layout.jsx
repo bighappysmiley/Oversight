@@ -1,13 +1,14 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import Icon from './Icon';
 
 const NAV = [
-  { to: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { to: '/devices', label: 'Devices', icon: '💻' },
-  { to: '/app-limits', label: 'App Limits', icon: '⏱️' },
-  { to: '/downtime', label: 'Downtime', icon: '🌙' },
-  { to: '/restrictions', label: 'Web Filter', icon: '🔒' },
-  { to: '/screen', label: 'Screen View', icon: '🖥️' },
+  { to: '/dashboard', label: 'Dashboard', icon: 'barChart' },
+  { to: '/devices', label: 'Devices', icon: 'laptop' },
+  { to: '/app-limits', label: 'App Limits', icon: 'clock' },
+  { to: '/downtime', label: 'Downtime', icon: 'moon' },
+  { to: '/restrictions', label: 'Web Filter', icon: 'lock' },
+  { to: '/screen', label: 'Screen View', icon: 'monitor' },
 ];
 
 export default function Layout({ children }) {
@@ -24,8 +25,11 @@ export default function Layout({ children }) {
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <aside style={styles.sidebar}>
         <div style={styles.logo}>
-          <span style={{ fontSize: 24 }}>👁️</span>
-          <span style={styles.logoText}>Oversight</span>
+          <Icon name="eye" size={28} color="#818cf8" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={styles.logoText}>Oversight</span>
+            <span style={{ fontSize: 10, color: '#6366f1', letterSpacing: 1 }}>BY BIGHAPPYSMILEY</span>
+          </div>
         </div>
         <nav style={styles.nav}>
           {NAV.map((item) => (
@@ -37,14 +41,17 @@ export default function Layout({ children }) {
                 ...(location.pathname === item.to ? styles.navActive : {}),
               }}
             >
-              <span>{item.icon}</span>
+              <Icon name={item.icon} size={16} color={location.pathname === item.to ? '#fff' : '#a5b4fc'} />
               <span>{item.label}</span>
             </Link>
           ))}
         </nav>
         <div style={styles.user}>
           <span style={{ fontSize: 13, color: '#9ca3af' }}>{parent?.email}</span>
-          <button onClick={handleLogout} style={styles.logoutBtn}>Sign out</button>
+          <button onClick={handleLogout} style={styles.logoutBtn}>
+            <Icon name="logout" size={14} color="#a5b4fc" />
+            <span>Sign out</span>
+          </button>
         </div>
       </aside>
       <main style={styles.main}>{children}</main>
@@ -75,6 +82,7 @@ const styles = {
     color: '#e0e7ff',
     fontWeight: 700,
     fontSize: 18,
+    lineHeight: 1,
   },
   nav: {
     flex: 1,
@@ -114,6 +122,9 @@ const styles = {
     borderRadius: 6,
     cursor: 'pointer',
     fontSize: 13,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
   },
   main: {
     marginLeft: 220,
