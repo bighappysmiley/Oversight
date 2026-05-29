@@ -27,7 +27,7 @@ function ChildPanel() {
       <div style={s.platformPanel}>
         <h3 style={s.panelTitle}>Install on iPhone / iPad</h3>
         <p style={s.panelText}>Download the Oversight profile — it sets up DNS filtering to block websites across every browser on this device.</p>
-        <a href="/api/install/ios-profile" download="oversight-ios.mobileconfig" style={s.bigDownloadBtn}>
+        <a href="/api/install/ios-profile" download="oversight-ios.mobileconfig" style={s.bigDownloadBtn} target="_blank" rel="noreferrer">
           <Icon name="download" size={18} color="#fff" />
           <span>Download iOS Profile</span>
         </a>
@@ -39,7 +39,7 @@ function ChildPanel() {
       <div style={s.platformPanel}>
         <h3 style={s.panelTitle}>Install on Android</h3>
         <p style={s.panelText}>Download the Oversight app and install it to monitor and control this device.</p>
-        <a href="/api/install/android" download="oversight.apk" style={s.bigDownloadBtn}>
+        <a href="/downloads/oversight.apk" download="oversight.apk" style={s.bigDownloadBtn}>
           <Icon name="download" size={18} color="#fff" />
           <span>Download Android APK</span>
         </a>
@@ -51,7 +51,7 @@ function ChildPanel() {
       <div style={s.platformPanel}>
         <h3 style={s.panelTitle}>Install on Windows</h3>
         <p style={s.panelText}>Download the Oversight installer and run it to set up monitoring on this device.</p>
-        <a href="/api/install/windows" download="oversight-windows.bat" style={s.bigDownloadBtn}>
+        <a href="/downloads/oversight-windows.bat" download="oversight-windows.bat" style={s.bigDownloadBtn}>
           <Icon name="download" size={18} color="#fff" />
           <span>Download Windows Installer</span>
         </a>
@@ -68,7 +68,7 @@ function ChildPanel() {
       <div style={s.platformPanel}>
         <h3 style={s.panelTitle}>Install on Linux</h3>
         <p style={s.panelText}>Download the Linux agent and run it to set up monitoring on this device.</p>
-        <a href="/api/install/linux" download="oversight-linux.sh" style={s.bigDownloadBtn}>
+        <a href="/downloads/oversight-linux.sh" download="oversight-linux.sh" style={s.bigDownloadBtn}>
           <Icon name="download" size={18} color="#fff" />
           <span>Download Linux Installer</span>
         </a>
@@ -85,7 +85,7 @@ function ChildPanel() {
     <div style={s.platformPanel}>
       <h3 style={s.panelTitle}>Install on Mac</h3>
       <p style={s.panelText}>Download the Oversight installer and double-click it to set up monitoring on this Mac.</p>
-      <a href="/api/install/mac" download="oversight-mac.zip" style={s.bigDownloadBtn}>
+      <a href="/downloads/oversight-mac.zip" download="oversight-mac.zip" style={s.bigDownloadBtn}>
         <Icon name="download" size={18} color="#fff" />
         <span>Download Mac Installer</span>
       </a>
