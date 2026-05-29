@@ -28,11 +28,6 @@ export async function GET(req: NextRequest) {
         <string>HTTPS</string>
         <key>ServerURL</key>
         <string>${dohUrl}</string>
-        <key>ServerAddresses</key>
-        <array>
-          <string>1.1.1.1</string>
-          <string>1.0.0.1</string>
-        </array>
       </dict>
       <key>PayloadDescription</key>
       <string>Routes DNS through Oversight to enforce website restrictions.</string>
