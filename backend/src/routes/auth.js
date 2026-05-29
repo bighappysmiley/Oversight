@@ -41,4 +41,14 @@ router.get('/me', requireAuth, (req, res) => {
   res.json({ parent: req.parent });
 });
 
+router.post('/waitlist', (req, res) => {
+  const { email, platform } = req.body;
+  if (!email || !platform) {
+    return res.status(400).json({ error: 'email and platform required' });
+  }
+  const db = getDb();
+  db.prepare('INSERT INTO waitlist (email, platform) VALUES (?, ?)').run(email, platform);
+  res.json({ ok: true });
+});
+
 module.exports = router;

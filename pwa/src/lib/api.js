@@ -55,6 +55,9 @@ export const api = {
   getScreenFrame: (deviceId) => req('GET', `/devices/${deviceId}/screen`),
   toggleScreenStream: (deviceId, enabled) => req('PUT', `/devices/${deviceId}/screen/toggle`, { enabled }),
 
+  // Waitlist
+  joinWaitlist: (email, platform) => req('POST', '/auth/waitlist', { email, platform }),
+
   // Import
   importDomains: async (deviceId, file) => {
     const token = getToken();
