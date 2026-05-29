@@ -91,8 +91,8 @@ function ChildPanel() {
       </a>
       <ol style={s.stepsList}>
         <li>Open your Downloads folder</li>
-        <li>Double-click <code style={s.inlineCode}>oversight-mac.command</code></li>
-        <li>Click "Open" if macOS asks for permission</li>
+        <li><strong>Right-click</strong> <code style={s.inlineCode}>oversight-mac.command</code> → <strong>Open</strong></li>
+        <li>Click <strong>"Open"</strong> in the security popup (required on first run)</li>
         <li>Enter the pairing code shown on your parent's device</li>
       </ol>
     </div>
