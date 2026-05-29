@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app';
+import { getAnalytics } from 'firebase/analytics';
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -8,30 +9,23 @@ import {
   updateProfile,
 } from 'firebase/auth';
 
-// Paste your Firebase project config here.
-// Go to: Firebase Console → Project Settings → Your apps → Web app → SDK setup
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+  apiKey: "AIzaSyBDjeQrrT-lwRcU1P8Kl6NjEpq9DURMQ-U",
+  authDomain: "oversight-a877a.firebaseapp.com",
+  projectId: "oversight-a877a",
+  storageBucket: "oversight-a877a.firebasestorage.app",
+  messagingSenderId: "874946947389",
+  appId: "1:874946947389:web:9249a4ac253af78d90bd54",
+  measurementId: "G-RLLMYB726Z",
 };
 
-export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
-
-let app, auth;
-
-if (isFirebaseConfigured) {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-}
-
-export { auth, onAuthStateChanged };
+const app = initializeApp(firebaseConfig);
+export const analytics = getAnalytics(app);
+export const auth = getAuth(app);
+export const isFirebaseConfigured = true;
+export { onAuthStateChanged };
 
 export async function firebaseRegister(email, password, name) {
-  if (!isFirebaseConfigured) throw new Error('Firebase not configured');
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName: name });
   const token = await cred.user.getIdToken();
@@ -42,7 +36,6 @@ export async function firebaseRegister(email, password, name) {
 }
 
 export async function firebaseLogin(email, password) {
-  if (!isFirebaseConfigured) throw new Error('Firebase not configured');
   const cred = await signInWithEmailAndPassword(auth, email, password);
   const token = await cred.user.getIdToken();
   return {
@@ -56,5 +49,5 @@ export async function firebaseLogin(email, password) {
 }
 
 export async function firebaseLogout() {
-  if (auth) await signOut(auth);
+  await signOut(auth);
 }
