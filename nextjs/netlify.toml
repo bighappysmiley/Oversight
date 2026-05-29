@@ -9,6 +9,12 @@
   NODE_VERSION = "20"
 
 [[headers]]
+  for = "/downloads/*"
+  [headers.values]
+    Content-Disposition = "attachment"
+    X-Robots-Tag = "noindex"
+
+[[headers]]
   for = "/api/dns/*"
   [headers.values]
     Content-Type = "application/dns-json"
