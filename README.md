@@ -8,7 +8,10 @@
 oversight/
 ├── backend/        Node.js + Express + SQLite API
 ├── pwa/            React + Vite Progressive Web App (parent dashboard)
-└── mac-agent/      Python daemon running on the child's Mac
+└── mac-agent/      Python daemons running on the child's device
+    ├── agent.py            macOS agent
+    ├── agent_windows.py    Windows agent
+    └── agent_linux.py      Linux agent
 ```
 
 ---
@@ -41,30 +44,61 @@ Deploy `pwa/dist/` to any static host (Vercel, Netlify, Cloudflare Pages, etc.).
 
 In production, set the Vite proxy target to your backend URL, or set `VITE_API_BASE` and update `pwa/src/lib/api.js`.
 
-### 3. Mac Agent (child's Mac)
+### 3. Child Agent
+
+All agents share the same config format and `--pair` / `--install` / `--uninstall` / `--dry-run` flags.
+
+#### macOS
 
 **Prerequisites:** Python 3.9+, `pip3 install requests`
 
 ```bash
-# 1. Add the device in the parent PWA → Devices page → copy the token
+python3 mac-agent/agent.py --pair     # pair with parent account
+sudo python3 mac-agent/agent.py --install   # install as LaunchDaemon
+sudo python3 mac-agent/agent.py --uninstall # remove
+python3 mac-agent/agent.py --dry-run        # monitor only, no enforcement
+```
 
-# 2. Copy the example config
-cp mac-agent/config.example.json mac-agent/config.json
+Or use the one-line installer:
 
-# 3. Edit config.json
-{
-  "server_url": "https://your-server.com",
-  "device_token": "paste-token-here"
-}
+```bash
+curl -fsSL https://your-server.com/install.sh | sudo bash
+```
 
-# 4. Test in dry-run mode first (no enforcement, just logging)
-python3 mac-agent/agent.py --dry-run
+#### Windows
 
-# 5. Install as a persistent background daemon (requires sudo)
-sudo python3 mac-agent/agent.py --install
+**Prerequisites:** Python 3.9+, `pip install requests psutil pywin32`
 
-# 6. To uninstall
-sudo python3 mac-agent/agent.py --uninstall
+Run PowerShell as Administrator:
+
+```powershell
+irm https://your-server.com/install.ps1 | iex
+```
+
+Or manually:
+
+```powershell
+python agent_windows.py --pair
+python agent_windows.py --install    # adds registry startup entry (run as Admin)
+python agent_windows.py --uninstall  # removes entry and cleans hosts
+python agent_windows.py --dry-run
+```
+
+#### Linux
+
+**Prerequisites:** Python 3.9+, `pip3 install requests psutil`, `sudo apt install xdotool`
+
+```bash
+curl -fsSL https://your-server.com/install-linux.sh | sudo bash
+```
+
+Or manually:
+
+```bash
+python3 agent_linux.py --pair
+sudo python3 agent_linux.py --install    # installs systemd service
+sudo python3 agent_linux.py --uninstall  # removes service and cleans hosts
+python3 agent_linux.py --dry-run
 ```
 
 The agent:
@@ -72,7 +106,19 @@ The agent:
 - Reports usage every **5 minutes**
 - Kills apps that exceed their daily limit
 - Kills all non-allowed apps during **downtime** hours
-- Updates `/etc/hosts` to block domains (requires sudo)
+- Updates `/etc/hosts` to block domains (requires root/Admin)
+
+---
+
+## Platform Support
+
+| Platform | Parent (Dashboard) | Child (Agent) |
+|---|---|---|
+| macOS | ✅ Web PWA | ✅ mac-agent/agent.py |
+| Windows | ✅ Web PWA | ✅ mac-agent/agent_windows.py |
+| Linux | ✅ Web PWA | ✅ mac-agent/agent_linux.py |
+| iOS | ✅ Web PWA (add to home screen) | 🔜 Coming soon |
+| Android | ✅ Web PWA (add to home screen) | 🔜 Coming soon |
 
 ---
 
