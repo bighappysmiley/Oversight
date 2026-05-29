@@ -106,9 +106,8 @@ export default function AddDevicePage() {
             <div style={s.countdown}>Expires in <strong>{formatTime(timeLeft)}</strong></div>
           </div>
           <div style={s.instructions}>
-            <p style={s.instrTitle}>On the child's Mac, open Terminal and run:</p>
-            <code style={s.instrCode}>sudo python3 agent.py --pair</code>
-            <p style={s.instrNote}>The agent will prompt for the server URL and this code. Once entered, this screen will update automatically.</p>
+            <p style={s.instrTitle}>On the child's Mac:</p>
+            <p style={s.instrNote}>Download and run the Oversight Installer from the <strong>Downloads</strong> page, then enter this code when prompted. This screen will update automatically once connected.</p>
           </div>
           <div style={s.waitRow}>
             <div style={s.spinner} />

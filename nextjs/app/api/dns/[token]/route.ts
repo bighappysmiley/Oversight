@@ -24,10 +24,17 @@ async function getRestrictions(token: string): Promise<{ domains: string[]; mode
   }
 }
 
+// Canary domains: returning NXDOMAIN for these tells browsers to disable
+// their own built-in DNS-over-HTTPS so the system filter takes effect.
+// Firefox checks use-application-dns.net; Chrome checks dns.resolver.arpa.
+const CANARY_DOMAINS = ['use-application-dns.net', 'dns.resolver.arpa'];
+
 function isBlocked(domain: string, restrictions: { domains: string[]; mode: string }): boolean {
+  const q = domain.replace(/\.$/, '').toLowerCase();
+  // Always block browser canary domains so built-in DoH is disabled.
+  if (CANARY_DOMAINS.some((c) => q === c || q.endsWith('.' + c))) return true;
   const domains = restrictions.domains || [];
   const mode = restrictions.mode || 'blocklist';
-  const q = domain.replace(/\.$/, '').toLowerCase();
   const match = domains.some((d) => q === d || q.endsWith('.' + d));
   return mode === 'blocklist' ? match : (domains.length > 0 && !match);
 }
