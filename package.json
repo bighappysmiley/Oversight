@@ -1,0 +1,12 @@
+{
+  "name": "oversight",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix pwa",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:pwa": "npm run dev --prefix pwa",
+    "build:pwa": "npm run build --prefix pwa",
+    "start:backend": "npm start --prefix backend"
+  }
+}
