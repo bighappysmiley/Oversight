@@ -83,7 +83,7 @@ def get_device_fingerprint():
     return hashlib.sha256(raw.encode()).hexdigest()[:32]
 
 
-def pair_device(pair_code=None):
+def pair_device(pair_code=None, skip_install_prompt=False):
     """Interactive pairing flow: claim a 6-digit code and save the device token."""
     print("=== Oversight Device Pairing ===\n")
 
@@ -138,9 +138,10 @@ def pair_device(pair_code=None):
     print(f"\n✅ Device paired! Token saved to {CONFIG_PATH}")
     print(f"   Device ID: {data['device_id']}")
 
-    run_install = input("\nInstall as a LaunchDaemon now? (requires sudo) [y/N]: ").strip().lower()
-    if run_install == "y":
-        install_launchd(CONFIG_PATH)
+    if not skip_install_prompt:
+        run_install = input("\nInstall as a LaunchDaemon now? (requires sudo) [y/N]: ").strip().lower()
+        if run_install == "y":
+            install_launchd(CONFIG_PATH)
 
 
 def get_running_apps():
@@ -548,7 +549,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.pair_code:
-        pair_device(pair_code=args.pair_code)
+        pair_device(pair_code=args.pair_code, skip_install_prompt=True)
         sys.exit(0)
 
     if args.pair:
