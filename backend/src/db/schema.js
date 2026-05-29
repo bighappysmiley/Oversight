@@ -65,6 +65,22 @@ function migrate(db) {
 
     CREATE INDEX IF NOT EXISTS idx_usage_device_date ON usage_logs(device_id, date);
     CREATE INDEX IF NOT EXISTS idx_web_device_date ON web_logs(device_id, date);
+
+    CREATE TABLE IF NOT EXISTS pair_codes (
+      code TEXT PRIMARY KEY,
+      parent_id TEXT NOT NULL REFERENCES parents(id),
+      device_name TEXT NOT NULL,
+      device_id TEXT,
+      claimed_at INTEGER,
+      expires_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS screen_frames (
+      device_id TEXT PRIMARY KEY REFERENCES devices(id),
+      frame_data TEXT NOT NULL,
+      captured_at INTEGER NOT NULL,
+      streaming_enabled INTEGER NOT NULL DEFAULT 0
+    );
   `);
 }
 
