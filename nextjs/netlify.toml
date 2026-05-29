@@ -18,6 +18,7 @@
   [headers.values]
     Content-Disposition = "attachment"
     X-Robots-Tag = "noindex"
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
 [[headers]]
   for = "/api/dns/*"

@@ -91,7 +91,7 @@ function ChildPanel() {
       </a>
       <ol style={s.stepsList}>
         <li>Open your Downloads folder and double-click <code style={s.inlineCode}>oversight-mac.zip</code> to unzip it</li>
-        <li><strong>Right-click</strong> <code style={s.inlineCode}>oversight-mac.command</code> → <strong>Open</strong></li>
+        <li><strong>Right-click</strong> <code style={s.inlineCode}>Oversight Installer</code> → <strong>Open</strong></li>
         <li>Click <strong>"Open"</strong> in the security popup</li>
         <li>Enter the pairing code shown on your parent's device</li>
       </ol>
