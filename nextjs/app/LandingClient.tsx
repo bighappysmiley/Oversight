@@ -85,14 +85,14 @@ function ChildPanel() {
     <div style={s.platformPanel}>
       <h3 style={s.panelTitle}>Install on Mac</h3>
       <p style={s.panelText}>Download the Oversight installer and double-click it to set up monitoring on this Mac.</p>
-      <a href="/api/install/mac" download="oversight-mac.command" style={s.bigDownloadBtn}>
+      <a href="/api/install/mac" download="oversight-mac.zip" style={s.bigDownloadBtn}>
         <Icon name="download" size={18} color="#fff" />
         <span>Download Mac Installer</span>
       </a>
       <ol style={s.stepsList}>
-        <li>Open your Downloads folder</li>
+        <li>Open your Downloads folder and double-click <code style={s.inlineCode}>oversight-mac.zip</code> to unzip it</li>
         <li><strong>Right-click</strong> <code style={s.inlineCode}>oversight-mac.command</code> → <strong>Open</strong></li>
-        <li>Click <strong>"Open"</strong> in the security popup (required on first run)</li>
+        <li>Click <strong>"Open"</strong> in the security popup</li>
         <li>Enter the pairing code shown on your parent's device</li>
       </ol>
     </div>
