@@ -25,6 +25,18 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "SAMEORIGIN"
 
+# Always revalidate CSS/JS so site updates show immediately after a deploy
+# (prevents stale stylesheets/scripts being served from browser cache).
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 # The Android package, when present, should always download rather than render.
 [[headers]]
   for = "/downloads/*"
