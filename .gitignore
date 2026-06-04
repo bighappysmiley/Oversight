@@ -1,12 +1,27 @@
+# Dependencies
 node_modules/
-dist/
-*.db
-*.db-wal
-*.db-shm
-mac-agent/config.json
-mac-agent/agent.log
+
+# Netlify
+.netlify/
+
+# Local env / secrets
 .env
 .env.local
-downloads/*.apk
-downloads/*.exe
-downloads/*.msi
+
+# Android build output
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+*.aab
+*.keystore
+*.jks
+# …but allow a distributed APK to be committed for the site to serve.
+!public/downloads/oversight.apk
+
+# Editor / OS
+.DS_Store
+*.log
+.idea/
+.vscode/

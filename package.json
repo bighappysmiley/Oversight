@@ -1,12 +1,10 @@
 {
   "name": "oversight",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "scripts": {
-    "install:all": "npm install --prefix backend && npm install --prefix pwa",
-    "dev:backend": "npm run dev --prefix backend",
-    "dev:pwa": "npm run dev --prefix pwa",
-    "build:pwa": "npm run build --prefix pwa",
-    "start:backend": "npm start --prefix backend"
+  "type": "module",
+  "description": "Oversight — a web-managed content filter that lets parents protect their children's iOS and Android devices without installing anything on their own phone.",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
   }
 }

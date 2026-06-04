@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Set up Oversight</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='3' fill='%234f5bd5'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container bar">
+      <a class="brand" href="/">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 5C6 5 2 12 2 12s4 7 10 7 10-7 10-7-4-7-10-7z" stroke="#4f5bd5" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="#4f5bd5"/></svg>
+        Oversight
+      </a>
+    </div>
+  </header>
+
+  <div class="enroll-wrap">
+    <div class="enroll-card">
+      <h1 style="margin-top:0;">Set up protection</h1>
+      <p class="muted" id="intro">Enter the setup code from your parent dashboard to protect this device.</p>
+
+      <div class="alert" id="alert"></div>
+
+      <!-- CODE ENTRY -->
+      <div id="code-entry">
+        <div class="field">
+          <label for="code">Setup code</label>
+          <input type="text" id="code" placeholder="8-character code" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase; letter-spacing:3px; font-weight:700;" />
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" id="continue">Continue</button>
+      </div>
+
+      <!-- PLATFORM INSTRUCTIONS -->
+      <div id="platform" hidden>
+        <div class="field">
+          <label for="dev-name">Name this device (optional)</label>
+          <input type="text" id="dev-name" placeholder="e.g. Maya's iPhone" />
+        </div>
+
+        <!-- iOS -->
+        <div id="ios-block" hidden>
+          <a class="btn btn-primary btn-block btn-lg" id="ios-install" href="#">Install Oversight protection</a>
+          <ol class="steps-ol" style="margin-top:22px;">
+            <li>Tap <strong>Install Oversight protection</strong> above.</li>
+            <li>iOS will say a profile was downloaded. Open <strong>Settings</strong>.</li>
+            <li>Tap <strong>Profile Downloaded</strong> near the top, then <strong>Install</strong>.</li>
+            <li>Enter this device's passcode and confirm. Protection is now active.</li>
+          </ol>
+          <p class="muted" style="font-size:13px;">To remove it later, your parent's protection password is required.</p>
+        </div>
+
+        <!-- Android -->
+        <div id="android-block" hidden>
+          <a class="btn btn-primary btn-block btn-lg" id="android-download" href="/downloads/oversight.apk">Download Oversight app</a>
+          <p class="muted" style="margin-top:14px;">Your setup code:</p>
+          <div class="code-box" id="android-code">--------</div>
+          <ol class="steps-ol" style="margin-top:8px;">
+            <li>Tap <strong>Download Oversight app</strong> and open the downloaded file.</li>
+            <li>If asked, allow installing apps from this browser.</li>
+            <li>Open <strong>Oversight</strong>, enter the setup code above, and set a name.</li>
+            <li>Approve <strong>device administrator</strong> access when prompted.</li>
+          </ol>
+          <p class="muted" style="font-size:13px;">Uninstalling later requires your parent's protection password.</p>
+        </div>
+
+        <!-- Other / desktop -->
+        <div id="other-block" hidden>
+          <div class="alert alert-info show">
+            Open this page on the <strong>child's iPhone, iPad, or Android device</strong> to install protection. Oversight protects phones and tablets running iOS or Android.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/enroll.js"></script>
+</body>
+</html>
