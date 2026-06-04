@@ -1,0 +1,33 @@
+# Oversight — Netlify configuration
+# The site is a plain static front-end in /public plus serverless functions
+# in /netlify/functions. No build step is required.
+
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Clean URL for the device-side enrollment page (so /enroll?code=XXXX works).
+[[redirects]]
+  from = "/enroll"
+  to = "/enroll.html"
+  status = 200
+
+# The /api/profile function sets its own application/x-apple-aspen-config MIME
+# type so Safari offers to install the profile instead of downloading text.
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+
+# The Android package, when present, should always download rather than render.
+[[headers]]
+  for = "/downloads/*"
+  [headers.values]
+    Content-Disposition = "attachment"
+    Cache-Control = "no-cache, no-store, must-revalidate"

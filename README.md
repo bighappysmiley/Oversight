@@ -1,193 +1,144 @@
 # Oversight
 
-> **Oversight** gives parents complete control over their child's digital life — block websites across every browser, set app limits, restrict video content, and monitor app and web usage, all from your phone.
+**A content filter for parents — managed entirely from the web.**
 
-## Architecture
+Oversight lets a parent protect a child's **iPhone, iPad, or Android** device
+without installing anything on the parent's own phone. The parent signs up on
+the website, sets the policy in a browser dashboard, and sets up each child
+device by opening a short setup link on it. Protection is locked behind the
+parent's password so a child can't simply remove it.
 
 ```
-oversight/
-├── backend/        Node.js + Express + SQLite API
-├── pwa/            React + Vite Progressive Web App (parent dashboard)
-└── mac-agent/      Python daemons running on the child's device
-    ├── agent.py            macOS agent
-    ├── agent_windows.py    Windows agent
-    └── agent_linux.py      Linux agent
+┌─────────────────────┐      web dashboard      ┌──────────────────────────┐
+│  Parent (any browser)│ ───────────────────────▶│  Oversight site + API     │
+│  - sign up / log in  │                          │  (static + Netlify funcs) │
+│  - set content policy│ ◀───────────────────────│  storage: Netlify Blobs   │
+│  - add devices       │      enrollment code     └────────────┬─────────────┘
+└─────────────────────┘                                        │
+                                                               │ open setup link
+                       ┌───────────────────────────────────────┴───────────────┐
+                       ▼                                                         ▼
+            ┌───────────────────────┐                          ┌───────────────────────────┐
+            │  Child iPhone / iPad   │                          │  Child Android device      │
+            │  installs a locked     │                          │  installs the guardian app │
+            │  Apple config profile  │                          │  (device admin + DNS VPN)  │
+            │  (web content filter + │                          │                            │
+            │   removal password)    │                          │  uninstall needs password  │
+            └───────────────────────┘                          └───────────────────────────┘
 ```
 
----
+## What's in this repo
 
-## Quick Start
-
-### 1. Backend
-
-```bash
-cd backend
-npm install
-# Optional: set environment variables
-export PORT=3001
-export JWT_SECRET=change-this-in-production
-node src/index.js
-```
-
-The API runs on `http://localhost:3001`. The SQLite database is created automatically at `backend/oversight.db`.
-
-### 2. Parent PWA
-
-```bash
-cd pwa
-npm install
-npm run dev          # dev server with HMR at http://localhost:5173
-npm run build        # production build in pwa/dist/
-```
-
-Deploy `pwa/dist/` to any static host (Vercel, Netlify, Cloudflare Pages, etc.).
-
-In production, set the Vite proxy target to your backend URL, or set `VITE_API_BASE` and update `pwa/src/lib/api.js`.
-
-### 3. Child Agent
-
-All agents share the same config format and `--pair` / `--install` / `--uninstall` / `--dry-run` flags.
-
-#### macOS
-
-**Prerequisites:** Python 3.9+, `pip3 install requests`
-
-```bash
-python3 mac-agent/agent.py --pair     # pair with parent account
-sudo python3 mac-agent/agent.py --install   # install as LaunchDaemon
-sudo python3 mac-agent/agent.py --uninstall # remove
-python3 mac-agent/agent.py --dry-run        # monitor only, no enforcement
-```
-
-Or use the one-line installer:
-
-```bash
-curl -fsSL https://your-server.com/install.sh | sudo bash
-```
-
-#### Windows
-
-**Prerequisites:** Python 3.9+, `pip install requests psutil pywin32`
-
-Run PowerShell as Administrator:
-
-```powershell
-irm https://your-server.com/install.ps1 | iex
-```
-
-Or manually:
-
-```powershell
-python agent_windows.py --pair
-python agent_windows.py --install    # adds registry startup entry (run as Admin)
-python agent_windows.py --uninstall  # removes entry and cleans hosts
-python agent_windows.py --dry-run
-```
-
-#### Linux
-
-**Prerequisites:** Python 3.9+, `pip3 install requests psutil`, `sudo apt install xdotool`
-
-```bash
-curl -fsSL https://your-server.com/install-linux.sh | sudo bash
-```
-
-Or manually:
-
-```bash
-python3 agent_linux.py --pair
-sudo python3 agent_linux.py --install    # installs systemd service
-sudo python3 agent_linux.py --uninstall  # removes service and cleans hosts
-python3 agent_linux.py --dry-run
-```
-
-The agent:
-- Polls for settings every **60 seconds**
-- Reports usage every **5 minutes**
-- Kills apps that exceed their daily limit
-- Kills all non-allowed apps during **downtime** hours
-- Updates `/etc/hosts` to block domains (requires root/Admin)
-
----
-
-## Platform Support
-
-| Platform | Parent (Dashboard) | Child (Agent) |
-|---|---|---|
-| macOS | ✅ Web PWA | ✅ mac-agent/agent.py |
-| Windows | ✅ Web PWA | ✅ mac-agent/agent_windows.py |
-| Linux | ✅ Web PWA | ✅ mac-agent/agent_linux.py |
-| iOS | ✅ Web PWA (add to home screen) | 🔜 Coming soon |
-| Android | ✅ Web PWA (add to home screen) | 🔜 Coming soon |
-
----
-
-## Features
-
-| Feature | Description |
+| Path | What it is |
 |---|---|
-| **App Limits** | Set per-app daily time limits in minutes. The agent terminates the app when the limit is hit. |
-| **Downtime** | Schedule overnight or custom quiet hours. Only explicitly allowed apps remain usable. |
-| **Website Filter** | Blocklist or allowlist domains. Changes propagate to `/etc/hosts` within 60 seconds. |
-| **Usage Dashboard** | View daily screen time charts, top apps, and top websites for any device. |
-| **Multi-device** | Add unlimited child devices to one parent account. |
-| **PWA** | Install the parent dashboard to your home screen on iOS/Android/desktop. |
+| `public/` | The website: landing page, parent dashboard, login/signup, and the device-side enrollment page. Plain HTML/CSS/JS — no build step. |
+| `netlify/functions/` | The API (serverless functions): auth, content policy, devices, enrollment, **iOS profile generation**, and Android sync. |
+| `netlify/lib/` | Shared helpers: storage (Netlify Blobs), password hashing, session tokens, and the `.mobileconfig` builder. |
+| `android/` | The Android **guardian app** (Kotlin): device-admin + DNS-filtering VPN + password-gated removal. See `android/README.md`. |
+| `.github/workflows/` | CI that builds the Android APK. |
 
----
+## How it works
 
-## API Reference
+### Parent side (web only)
+1. **Sign up** on the site → creates the parent account.
+2. **Set a device-protection password** (separate from the login password).
+   This becomes the iOS profile-removal password and the Android removal
+   password.
+3. **Set the content policy** — adult-content filter, social-media block,
+   Safe Search, and custom block / allow lists (or switch to allow-list-only
+   mode).
+4. **Add a device** → the dashboard issues a short, one-hour **setup code** and
+   a link like `https://your-site/enroll?code=XXXXXXXX`.
 
-### Auth
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/auth/register` | Create parent account |
-| POST | `/api/auth/login` | Get JWT token |
-| GET | `/api/auth/me` | Current parent info |
+### Child device side
+Open the setup link (or `…/enroll` and type the code) on the child's device.
+The page detects the OS:
 
-### Devices (parent — Bearer token)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/api/devices` | List devices |
-| POST | `/api/devices` | Register new device |
-| DELETE | `/api/devices/:id` | Remove device |
-| GET | `/api/devices/:id/settings` | Get settings |
-| PUT | `/api/devices/:id/settings` | Update settings |
-| GET | `/api/devices/:id/usage?from=&to=` | Get usage logs |
+- **iOS / iPadOS** → downloads a configuration profile from
+  `/api/profile`. The profile uses Apple's **BuiltIn web content filter** plus a
+  **profile-removal password**, so the child can't delete it without the
+  parent's password. (Works on a normal, unsupervised device installed via
+  Safari.)
+- **Android** → downloads the **guardian app**. After the parent types the
+  setup code, the app enrolls, becomes a device administrator, and starts a
+  local DNS-filtering VPN. Uninstalling requires the parent's password.
 
-### Agent endpoints (X-Device-Token header)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/api/devices/agent/settings` | Pull current settings |
-| POST | `/api/devices/agent/usage` | Push usage data |
+### Keeping policy in sync
+- **iOS**: the policy is baked into the profile at install time. Changing the
+  policy and re-installing updates it. (A future MDM/APNs integration could push
+  live updates — see *Limitations*.)
+- **Android**: the app pulls the latest policy from `/api/agent/policy` every
+  ~15 minutes and on demand, so dashboard changes propagate automatically.
 
----
+## Deploy the website
 
-## Settings Schema
+The site is built to run on **Netlify** with zero external services — storage
+uses **Netlify Blobs**, which is provided automatically.
 
-```json
-{
-  "app_limits": [
-    { "app_name": "Safari", "bundle_id": "com.apple.Safari", "daily_limit_minutes": 60 }
-  ],
-  "downtime": {
-    "enabled": true,
-    "start": "22:00",
-    "end": "07:00",
-    "allowed_apps": ["Messages", "FaceTime"]
-  },
-  "website_restrictions": {
-    "mode": "blocklist",
-    "domains": ["youtube.com", "tiktok.com"]
-  }
-}
+1. Connect this repo to Netlify (or `netlify deploy`). `netlify.toml` already
+   sets `publish = "public"` and `functions = "netlify/functions"`.
+2. No build command is needed. Netlify installs `@netlify/blobs` from
+   `package.json` and serves the functions.
+3. (Optional) Set an `OVERSIGHT_SECRET` environment variable to a long random
+   string. If unset, the app generates and stores one automatically.
+
+Local development:
+
+```bash
+npm install
+npx netlify dev      # serves the site + functions + Blobs locally
 ```
 
----
+### API summary
 
-## Production Checklist
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| POST | `/api/signup` · `/api/login` · `/api/logout` | cookie | Parent auth |
+| GET/PUT | `/api/account` | cookie | Current account; set protection password |
+| GET/PUT | `/api/policy` | cookie | Read / update content policy |
+| GET/DELETE | `/api/devices` | cookie | List / remove devices |
+| POST | `/api/enroll/start` | cookie | Create a setup code |
+| GET | `/api/enroll/info?code=` | public | Validate a setup code |
+| GET | `/api/profile?code=&name=` | code | **Generate the iOS `.mobileconfig`** |
+| GET | `/api/android/config?code=&name=` | code | Complete Android enrollment |
+| GET | `/api/agent/policy` | device token | Android policy sync |
+| POST | `/api/agent/checkin` | device token | Android heartbeat |
+| POST | `/api/agent/verify` | device token | Verify removal password |
 
-- [ ] Set `JWT_SECRET` to a strong random string
-- [ ] Use HTTPS for the backend (required for PWA service worker)
-- [ ] Set `CORS_ORIGIN` to your PWA domain
-- [ ] Put the backend behind nginx or a reverse proxy
-- [ ] Back up `oversight.db` regularly
+## Build the Android app
+
+See **`android/README.md`**. In short: set your site URL in
+`android/app/build.gradle`, then let the **Build Android APK** GitHub Action
+produce `oversight.apk`, and place it at `public/downloads/oversight.apk` (or
+serve the release asset).
+
+## Security notes
+
+- Login passwords are hashed with **scrypt**; sessions are HMAC-signed,
+  `HttpOnly`/`Secure`/`SameSite=Lax` cookies.
+- The device-protection password must be recoverable to embed it as the iOS
+  removal password, so it is stored **encrypted (AES-256-GCM)** at rest, not as
+  a one-way hash. The Android removal check never ships the password to the
+  device — it's verified server-side.
+
+## Honest limitations
+
+This is a strong, self-hostable foundation, not a turnkey commercial MDM. Be
+aware:
+
+- **iOS profile signing:** the generated profile is unsigned, so Safari shows
+  it as *"Not Verified."* It still installs and enforces. To show it as
+  verified, sign the `.mobileconfig` with an Apple-issued certificate.
+- **iOS true lock / live updates:** a removal password protects an unsupervised
+  device well. For non-removable enrollment and pushed live policy updates you
+  need **device supervision** (Apple Configurator) or a full **MDM server with
+  APNs** — a larger project than this repo.
+- **Android DNS bypass & Settings deactivation:** see `android/README.md`. DNS
+  filtering can be bypassed by hardcoded DoH/DoT; full lockdown needs
+  **Device Owner** provisioning.
+- **Category filtering** currently uses Apple's BuiltIn filter (iOS) and a small
+  built-in list plus your custom lists (Android). For exhaustive category
+  coverage, point Android at a hosted categorized blocklist.
+
+These trade-offs are documented so you can decide how far to take the
+deployment.

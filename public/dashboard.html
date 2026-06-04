@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard · Oversight</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='3' fill='%234f5bd5'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <div class="dash">
+    <aside class="side">
+      <a class="brand" href="/">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5C6 5 2 12 2 12s4 7 10 7 10-7 10-7-4-7-10-7z" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="#fff"/></svg>
+        Oversight
+      </a>
+      <nav>
+        <a href="#" data-tab="devices" class="active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v10H4zm0 12h16v2H4zM2 21h20v1H2z"/></svg> Devices
+        </a>
+        <a href="#" data-tab="policy">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 6v6c0 5 3.8 9.4 9 10 5.2-.6 9-5 9-10V6l-9-4z"/></svg> Content Policy
+        </a>
+        <a href="#" data-tab="security">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 00-5 5v3H5v13h14V9h-2V6a5 5 0 00-5-5zm3 8H9V6a3 3 0 016 0v3z"/></svg> Protection Password
+        </a>
+      </nav>
+      <div class="side-foot">
+        <div id="acct-email" style="margin-bottom:8px; word-break:break-all;"></div>
+        <a href="#" id="logout">Log out</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- DEVICES TAB -->
+      <section data-panel="devices">
+        <h1>Devices</h1>
+        <p class="page-sub">Protect your child's phones and tablets. The Oversight protection installs only on these devices — never on your own phone.</p>
+
+        <div class="panel">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div>
+              <h2>Protected devices</h2>
+              <p class="panel-sub" style="margin:0;">Devices currently managed by your account.</p>
+            </div>
+            <button class="btn btn-primary" id="add-device">+ Add a device</button>
+          </div>
+          <div id="device-list" style="margin-top:16px;">
+            <div class="empty">Loading…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- POLICY TAB -->
+      <section data-panel="policy" hidden>
+        <h1>Content Policy</h1>
+        <p class="page-sub">These rules apply to every protected device. Changes reach devices automatically.</p>
+
+        <div class="panel">
+          <h2>Filters</h2>
+          <p class="panel-sub">Quick switches for the most common protections.</p>
+          <div class="row">
+            <div class="row-main"><div class="row-title">Filter adult content</div><div class="row-desc">Automatically block pornography and explicit websites.</div></div>
+            <label class="switch"><input type="checkbox" id="t-adult" /><span class="track"></span></label>
+          </div>
+          <div class="row">
+            <div class="row-main"><div class="row-title">Enforce Safe Search</div><div class="row-desc">Force safe results on Google, Bing, YouTube and more (Android).</div></div>
+            <label class="switch"><input type="checkbox" id="t-safe" /><span class="track"></span></label>
+          </div>
+          <div class="row">
+            <div class="row-main"><div class="row-title">Block social media</div><div class="row-desc">Block TikTok, Instagram, Snapchat, X, Facebook and Reddit.</div></div>
+            <label class="switch"><input type="checkbox" id="t-social" /><span class="track"></span></label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Website rules</h2>
+          <p class="panel-sub">Choose how websites are handled, then build your lists.</p>
+          <div class="seg" id="mode-seg">
+            <button data-mode="blocklist" class="active">Block specific sites</button>
+            <button data-mode="allowlist">Allow only specific sites</button>
+          </div>
+
+          <div id="block-section" style="margin-top:22px;">
+            <div class="row-title">Blocked websites</div>
+            <div class="row-desc">These sites are always blocked.</div>
+            <div class="taglist" id="blocked-tags"></div>
+            <div class="add-inline">
+              <input type="text" id="blocked-input" placeholder="e.g. example.com" />
+              <button class="btn btn-ghost" id="blocked-add">Add</button>
+            </div>
+          </div>
+
+          <div id="allow-section" style="margin-top:22px;">
+            <div class="row-title">Allowed websites</div>
+            <div class="row-desc" id="allow-desc">Exceptions that are always permitted.</div>
+            <div class="taglist" id="allowed-tags"></div>
+            <div class="add-inline">
+              <input type="text" id="allowed-input" placeholder="e.g. wikipedia.org" />
+              <button class="btn btn-ghost" id="allowed-add">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert" id="policy-alert"></div>
+        <div class="save-bar">
+          <button class="btn btn-primary btn-lg" id="save-policy">Save changes</button>
+        </div>
+      </section>
+
+      <!-- SECURITY TAB -->
+      <section data-panel="security" hidden>
+        <h1>Protection Password</h1>
+        <p class="page-sub">This is the password your child must enter to remove Oversight from a device. Keep it private — it's different from your login password.</p>
+
+        <div class="panel">
+          <div class="alert alert-info show" id="prot-status">Checking…</div>
+          <div class="field">
+            <label for="prot-pass">Device-protection password</label>
+            <input type="password" id="prot-pass" autocomplete="new-password" minlength="4" placeholder="At least 4 characters" />
+            <div class="hint">On iOS this becomes the profile-removal password. On Android it's required to deactivate the guardian app. You must set this before adding a device.</div>
+          </div>
+          <div class="alert" id="prot-alert"></div>
+          <button class="btn btn-primary" id="save-prot">Save password</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ADD DEVICE MODAL -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal">
+      <div id="modal-step-name">
+        <h2>Add a device</h2>
+        <p class="muted">Give this device a name so you can recognise it later.</p>
+        <div class="field" style="margin-top:14px;">
+          <label for="dev-name">Device name</label>
+          <input type="text" id="dev-name" placeholder="e.g. Maya's iPhone" />
+        </div>
+        <div class="alert" id="modal-alert"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn btn-ghost" id="modal-cancel">Cancel</button>
+          <button class="btn btn-primary" id="modal-generate">Generate setup code</button>
+        </div>
+      </div>
+
+      <div id="modal-step-code" hidden>
+        <h2>Set up on the child's device</h2>
+        <p class="muted">On your <strong>child's</strong> phone or tablet, open a browser and go to:</p>
+        <div class="link-box">
+          <input type="text" id="enroll-url" readonly />
+          <button class="btn btn-ghost" id="copy-url">Copy</button>
+        </div>
+        <p class="muted" style="margin:18px 0 0;">…then enter this setup code:</p>
+        <div class="code-box" id="code-display">--------</div>
+        <p class="muted" style="font-size:13px;">This code expires in 1 hour. iOS will install a protected profile; Android will install the guardian app.</p>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn btn-primary" id="modal-done">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

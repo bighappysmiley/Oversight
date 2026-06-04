@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Log in · Oversight</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='3' fill='%234f5bd5'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container bar">
+      <a class="brand" href="/">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 5C6 5 2 12 2 12s4 7 10 7 10-7 10-7-4-7-10-7z" stroke="#4f5bd5" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="#4f5bd5"/></svg>
+        Oversight
+      </a>
+      <div class="nav-actions"><a class="btn btn-ghost" href="/signup.html">Create account</a></div>
+    </div>
+  </header>
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>Welcome back</h1>
+      <p class="muted">Log in to manage your child's devices.</p>
+      <div class="alert" id="alert"></div>
+      <form id="form">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" autocomplete="current-password" required />
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" id="submit" type="submit">Log in</button>
+      </form>
+      <p class="muted" style="margin-top:20px; text-align:center">
+        No account yet? <a href="/signup.html">Sign up</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>initAuth('login');</script>
+</body>
+</html>
