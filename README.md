@@ -133,6 +133,12 @@ aware:
   device well. For non-removable enrollment and pushed live policy updates you
   need **device supervision** (Apple Configurator) or a full **MDM server with
   APNs** — a larger project than this repo.
+- **App limits, downtime & app-store blocking:** enforced by the **Android**
+  guardian app (it needs "Usage access" and "Display over other apps"
+  permissions, requested during setup). On iPhone/iPad these are **not possible
+  through a Safari-installed profile** — they require supervision/MDM. See
+  [docs/ios-advanced-controls.md](docs/ios-advanced-controls.md) for the full
+  MDM walkthrough.
 - **Android DNS bypass & Settings deactivation:** see `android/README.md`. DNS
   filtering can be bypassed by hardcoded DoH/DoT; full lockdown needs
   **Device Owner** provisioning.

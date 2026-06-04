@@ -45,6 +45,29 @@ export default async (req) => {
     return json({ ok: true });
   }
 
+  // The Android app reports the device's installed (launchable) apps so the
+  // parent can pick which to block or limit by name.
+  if (action === 'apps' && req.method === 'POST') {
+    const body = await readJson(req);
+    const key = `${ref.accountId}:${ref.deviceId}`;
+    const device = await stores.devices().get(key, { type: 'json' });
+    if (device) {
+      const apps = Array.isArray(body.apps)
+        ? body.apps
+            .filter((a) => a && typeof a.pkg === 'string')
+            .slice(0, 1000)
+            .map((a) => ({
+              pkg: String(a.pkg).slice(0, 200),
+              label: String(a.label || a.pkg).slice(0, 100),
+            }))
+        : [];
+      device.apps = apps;
+      device.lastSeen = new Date().toISOString();
+      await stores.devices().setJSON(key, device);
+    }
+    return json({ ok: true });
+  }
+
   // Verify the parent's device-protection password before allowing the app to
   // deactivate device administration / be uninstalled.
   if (action === 'verify' && req.method === 'POST') {

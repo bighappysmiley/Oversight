@@ -3,6 +3,7 @@ package com.oversight.guardian
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Calendar
 
 /**
  * Persists enrollment + policy in SharedPreferences and answers the core
@@ -93,4 +94,42 @@ object PolicyStore {
             .map { arr.optString(it).trim().lowercase().removePrefix("www.") }
             .filter { it.isNotEmpty() }
     }
+
+    // ---- App & time controls ----
+    private val STORE_PACKAGES = setOf(
+        "com.android.vending",                   // Google Play Store
+        "com.google.android.packageinstaller",
+        "com.android.packageinstaller",
+        "com.amazon.venezia"                     // Amazon Appstore
+    )
+
+    fun storePackages(): Set<String> = STORE_PACKAGES
+
+    fun blockAppStore(ctx: Context): Boolean = policy(ctx).optBoolean("blockAppStore", false)
+
+    fun isAppListed(ctx: Context, pkg: String): Boolean {
+        val arr = policy(ctx).optJSONArray("blockedApps") ?: return false
+        for (i in 0 until arr.length()) if (arr.optString(i) == pkg) return true
+        return false
+    }
+
+    // Daily limit in minutes for a package, or -1 if none.
+    fun appLimitMinutes(ctx: Context, pkg: String): Int {
+        val limits = policy(ctx).optJSONObject("appLimits") ?: return -1
+        return if (limits.has(pkg)) limits.optInt(pkg, -1) else -1
+    }
+
+    fun downtimeActive(ctx: Context): Boolean {
+        val dt = policy(ctx).optJSONObject("downtime") ?: return false
+        if (!dt.optBoolean("enabled", false)) return false
+        val start = parseHm(dt.optString("start", "21:00"))
+        val end = parseHm(dt.optString("end", "07:00"))
+        val cal = Calendar.getInstance()
+        val now = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
+        return if (start <= end) now in start until end else (now >= start || now < end)
+    }
+
+    private fun parseHm(s: String): Int = try {
+        val p = s.split(":"); p[0].toInt() * 60 + p[1].toInt()
+    } catch (e: Exception) { 0 }
 }

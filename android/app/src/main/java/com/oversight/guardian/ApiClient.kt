@@ -23,6 +23,9 @@ object ApiClient {
     fun verify(apiBase: String, token: String, password: String): Result =
         post("${apiBase.trimEnd('/')}/api/agent/verify", token, JSONObject().put("password", password))
 
+    fun reportApps(apiBase: String, token: String, body: JSONObject): Result =
+        post("${apiBase.trimEnd('/')}/api/agent/apps", token, body)
+
     private fun enc(s: String) = URLEncoder.encode(s, "UTF-8")
 
     private fun get(urlStr: String, token: String?): Result {

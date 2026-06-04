@@ -52,6 +52,25 @@ gradle assembleDebug        # or ./gradlew if you generate a wrapper
 > Run `gradle wrapper --gradle-version 8.7` once to generate it, or just use a
 > locally installed Gradle 8.7+ as shown above. CI installs Gradle for you.
 
+## App & time controls
+
+Beyond web filtering, the app enforces (set per device in the dashboard):
+
+- **App blocking** — fully block chosen apps.
+- **Daily app time limits** — e.g. 30 min/day of a game; the app overlays a
+  "time's up" screen when the limit is hit.
+- **Downtime** — block apps during a daily window.
+- **App-store blocking** — block the Play Store so no new apps can be installed.
+
+These use a foreground-app monitor (`AppGuardService`) plus a full-screen
+overlay, which require two permissions the parent grants once during setup:
+
+- **Usage access** (`Settings → Usage access`) — to see the foreground app and
+  per-app usage time.
+- **Display over other apps** — to show the block screen.
+
+The setup screen shows "Allow…" buttons until both are granted.
+
 ## How removal is protected
 
 Android blocks uninstalling an **active device-administrator** app until admin

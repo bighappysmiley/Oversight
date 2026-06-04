@@ -21,6 +21,8 @@ class SyncWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
         val res = ApiClient.fetchPolicy(base, token)
         res.body?.optJSONObject("policy")?.let { PolicyStore.savePolicy(ctx, it) }
         ApiClient.checkin(base, token)
+        // Keep the parent's app list fresh.
+        runCatching { AppInventory.report(ctx) }
         return Result.success()
     }
 
