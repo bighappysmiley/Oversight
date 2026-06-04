@@ -35,7 +35,7 @@ export default async (req) => {
   if (!ref) return json({ error: 'Invalid device token.' }, { status: 401 });
 
   if (action === 'policy' && req.method === 'GET') {
-    const policy = await getPolicy(ref.accountId);
+    const policy = await getPolicy(ref.accountId, ref.deviceId);
     await touch(ref);
     return json({ policy });
   }

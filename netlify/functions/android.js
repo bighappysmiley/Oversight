@@ -2,14 +2,14 @@
 // parent types the enrollment code shown in the dashboard:
 //   GET /api/android/config?code=XXXX&name=DeviceName
 //
-// Returns the device token (used for ongoing policy sync), the current policy,
-// and a salted hash of the protection password so the app can verify it
-// offline before allowing device-admin deactivation / uninstall.
+// Returns the device token (used for ongoing policy sync) and the device's
+// content policy. The removal password is verified server-side via
+// /api/agent/verify, so no password material is sent to the device.
 import crypto from 'node:crypto';
 import {
   stores,
   getAccountById,
-  getPolicy,
+  ensureDevicePolicy,
   json,
 } from '../lib/util.js';
 
@@ -33,8 +33,6 @@ export default async (req) => {
     return json({ error: 'Account is not ready for enrollment.' }, { status: 400 });
   }
 
-  const policy = await getPolicy(account.id);
-
   const deviceId = `and-${code}`;
   const token = crypto.randomBytes(24).toString('hex');
 
@@ -49,6 +47,8 @@ export default async (req) => {
     status: 'active',
   });
   await stores.deviceTokens().setJSON(token, { accountId: account.id, deviceId });
+
+  const policy = await ensureDevicePolicy(account.id, deviceId);
 
   return json({
     ok: true,

@@ -54,51 +54,60 @@
       <!-- POLICY TAB -->
       <section data-panel="policy" hidden>
         <h1>Content Policy</h1>
-        <p class="page-sub">These rules apply to every protected device. Changes reach devices automatically.</p>
+        <p class="page-sub">Pick a device to set its own rules, or edit the default that new devices inherit. Changes reach devices automatically.</p>
 
         <div class="panel">
-          <h2>Filters</h2>
-          <p class="panel-sub">Quick switches for the most common protections.</p>
-          <div class="row">
-            <div class="row-main"><div class="row-title">Filter adult content</div><div class="row-desc">Automatically block pornography and explicit websites.</div></div>
-            <label class="switch"><input type="checkbox" id="t-adult" /><span class="track"></span></label>
-          </div>
-          <div class="row">
-            <div class="row-main"><div class="row-title">Enforce Safe Search</div><div class="row-desc">Force safe results on Google, Bing, YouTube and more (Android).</div></div>
-            <label class="switch"><input type="checkbox" id="t-safe" /><span class="track"></span></label>
-          </div>
-          <div class="row">
-            <div class="row-main"><div class="row-title">Block social media</div><div class="row-desc">Block TikTok, Instagram, Snapchat, X, Facebook and Reddit.</div></div>
-            <label class="switch"><input type="checkbox" id="t-social" /><span class="track"></span></label>
+          <div class="field" style="margin-bottom:0;">
+            <label for="policy-device">Editing rules for</label>
+            <select id="policy-device"></select>
+            <div class="hint" id="policy-target-hint">The default applies to devices you add later.</div>
           </div>
         </div>
 
         <div class="panel">
-          <h2>Website rules</h2>
-          <p class="panel-sub">Choose how websites are handled, then build your lists.</p>
+          <h2>Filtering mode</h2>
+          <p class="panel-sub">How websites are handled on this device.</p>
           <div class="seg" id="mode-seg">
-            <button data-mode="blocklist" class="active">Block specific sites</button>
-            <button data-mode="allowlist">Allow only specific sites</button>
+            <button data-mode="auto" class="active">Automatic</button>
+            <button data-mode="blocklist">Block list</button>
+            <button data-mode="allowlist">Allow list</button>
           </div>
+          <div class="hint" id="mode-hint" style="margin-top:12px;"></div>
+        </div>
 
-          <div id="block-section" style="margin-top:22px;">
-            <div class="row-title">Blocked websites</div>
-            <div class="row-desc">These sites are always blocked.</div>
-            <div class="taglist" id="blocked-tags"></div>
-            <div class="add-inline">
-              <input type="text" id="blocked-input" placeholder="e.g. example.com" />
-              <button class="btn btn-ghost" id="blocked-add">Add</button>
-            </div>
+        <div class="panel" id="filters-panel">
+          <h2>Filters</h2>
+          <div class="row" id="row-adult">
+            <div class="row-main"><div class="row-title">Block adult content</div><div class="row-desc">Automatically block pornography and explicit websites.</div></div>
+            <label class="switch"><input type="checkbox" id="t-adult" /><span class="track"></span></label>
           </div>
+          <div class="row" id="row-social">
+            <div class="row-main"><div class="row-title">Block social media</div><div class="row-desc">Block TikTok, Instagram, Snapchat, X, Facebook and Reddit.</div></div>
+            <label class="switch"><input type="checkbox" id="t-social" /><span class="track"></span></label>
+          </div>
+          <div class="row" id="row-safe">
+            <div class="row-main"><div class="row-title">Enforce Safe Search</div><div class="row-desc">Force safe results on Google, Bing and YouTube (Android).</div></div>
+            <label class="switch"><input type="checkbox" id="t-safe" /><span class="track"></span></label>
+          </div>
+        </div>
 
-          <div id="allow-section" style="margin-top:22px;">
-            <div class="row-title">Allowed websites</div>
-            <div class="row-desc" id="allow-desc">Exceptions that are always permitted.</div>
-            <div class="taglist" id="allowed-tags"></div>
-            <div class="add-inline">
-              <input type="text" id="allowed-input" placeholder="e.g. wikipedia.org" />
-              <button class="btn btn-ghost" id="allowed-add">Add</button>
-            </div>
+        <div class="panel" id="block-panel">
+          <h2>Blocked websites</h2>
+          <p class="panel-sub">These sites are always blocked on this device.</p>
+          <div class="taglist" id="blocked-tags"></div>
+          <div class="add-inline">
+            <input type="text" id="blocked-input" placeholder="e.g. example.com" />
+            <button class="btn btn-ghost" id="blocked-add">Add</button>
+          </div>
+        </div>
+
+        <div class="panel" id="allow-panel">
+          <h2 id="allow-title">Allowed websites</h2>
+          <p class="panel-sub" id="allow-desc">Exceptions that are always permitted.</p>
+          <div class="taglist" id="allowed-tags"></div>
+          <div class="add-inline">
+            <input type="text" id="allowed-input" placeholder="e.g. wikipedia.org" />
+            <button class="btn btn-ghost" id="allowed-add">Add</button>
           </div>
         </div>
 

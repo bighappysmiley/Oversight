@@ -4,7 +4,7 @@
 import {
   stores,
   getAccountById,
-  getPolicy,
+  ensureDevicePolicy,
   decryptSecret,
   json,
 } from '../lib/util.js';
@@ -31,7 +31,6 @@ export default async (req) => {
   }
 
   const removalPassword = await decryptSecret(account.protectionEnc);
-  const policy = await getPolicy(account.id);
 
   const deviceId = `ios-${code}`;
   await stores.devices().setJSON(`${account.id}:${deviceId}`, {
@@ -44,6 +43,7 @@ export default async (req) => {
     status: 'active',
   });
 
+  const policy = await ensureDevicePolicy(account.id, deviceId);
   const profile = buildProfile({
     suffix: code.toLowerCase(),
     removalPassword,
