@@ -284,14 +284,15 @@ section { padding: 64px 0; }
 }
 
 /* ---------- Video carousel ("See Oversight in action") ---------- */
-.vslider { position: relative; max-width: 860px; margin: 0 auto; }
-.vslide { display: none; }
+.vcarousel { display: flex; align-items: center; justify-content: center; gap: 14px; max-width: 940px; margin: 0 auto; }
+.vstage { flex: 1; min-width: 0; display: flex; justify-content: center; }
+.vslide { display: none; width: 100%; }
 .vslide.active { display: block; }
-.vslide video { width: 100%; display: block; border-radius: 14px; box-shadow: var(--shadow-lg); background: #000; max-height: 64vh; }
-.vnav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 999px; border: none; background: rgba(15,18,38,.6); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; display: grid; place-items: center; z-index: 2; }
-.vnav:hover { background: rgba(15,18,38,.88); }
-.vnav.prev { left: 10px; }
-.vnav.next { right: 10px; }
+/* Bound the video by height so the whole thing is always visible, never huge. */
+.vslide video { display: block; margin: 0 auto; max-width: 100%; max-height: 56vh; width: auto; border-radius: 14px; box-shadow: var(--shadow-lg); background: #000; }
+.vnav { flex: none; width: 46px; height: 46px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--brand); font-size: 24px; line-height: 1; cursor: pointer; display: grid; place-items: center; box-shadow: var(--shadow); transition: background .15s; }
+.vnav:hover { background: var(--surface-2); }
 .vdots { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
 .vdot { width: 10px; height: 10px; border-radius: 999px; background: #cdd1e4; border: none; padding: 0; cursor: pointer; transition: .25s; }
 .vdot.active { background: var(--brand); width: 26px; }
+@media (max-width: 640px) { .vnav { width: 38px; height: 38px; font-size: 20px; } .vcarousel { gap: 8px; } }
