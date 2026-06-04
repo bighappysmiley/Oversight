@@ -101,6 +101,94 @@
     </div>
   </section>
 
+  <section class="alt" id="setup">
+    <div class="container">
+      <h2 class="section-title">Set up on Android in a minute</h2>
+      <p class="section-sub">Watch exactly what you do — on your dashboard and on your child's phone.</p>
+      <div class="wt">
+        <div class="phone" aria-hidden="true">
+          <div class="notch"></div>
+          <div class="screen" id="wt-screen">
+            <!-- Step 1: parent dashboard -->
+            <div class="wt-frame active">
+              <div class="wt-statusbar"><span>9:41</span><span>100%</span></div>
+              <div class="mock-bar"><span class="dot"></span> oversight · dashboard</div>
+              <div class="mock-card">
+                <div class="mock-title">Devices</div>
+                <div class="mock-sub">Protect a new phone or tablet.</div>
+                <div class="mock-btn" style="margin-top:12px;">+ Add a device</div>
+              </div>
+              <div class="mock-sub" style="text-align:center;">Your setup code</div>
+              <div class="mock-code">K7P2M9QX</div>
+            </div>
+            <!-- Step 2: child's phone, enter code -->
+            <div class="wt-frame">
+              <div class="wt-statusbar"><span>9:41</span><span>100%</span></div>
+              <div class="mock-bar"><span class="dot"></span> oversight · setup</div>
+              <div class="mock-card">
+                <div class="mock-title">Set up protection</div>
+                <div class="mock-sub" style="margin:4px 0 10px;">Enter the code from the dashboard.</div>
+                <div class="mock-field">K7P2M9QX</div>
+                <div class="mock-btn" style="margin-top:12px;">Continue</div>
+              </div>
+            </div>
+            <!-- Step 3: download app -->
+            <div class="wt-frame">
+              <div class="wt-statusbar"><span>9:41</span><span>100%</span></div>
+              <div class="mock-applogo">&#128065; Oversight</div>
+              <div class="mock-btn">Download Oversight app</div>
+              <div class="mock-card">
+                <div class="mock-sub" style="margin-bottom:8px;">Installing&hellip; 80%</div>
+                <div class="mock-bar2"><span style="width:80%"></span></div>
+              </div>
+              <div class="mock-sub" style="text-align:center;">Then tap the file to install.</div>
+            </div>
+            <!-- Step 4: device admin -->
+            <div class="wt-frame">
+              <div class="wt-statusbar"><span>9:41</span><span>100%</span></div>
+              <div class="mock-applogo">&#128065; Oversight</div>
+              <div class="mock-spacer"></div>
+              <div class="mock-dialog">
+                <div class="mock-title">Activate device admin?</div>
+                <div class="mock-sub" style="margin-top:4px;">Oversight can't be removed without the parent password.</div>
+                <div class="acts"><span class="no">Cancel</span><span class="ok">Activate</span></div>
+              </div>
+            </div>
+            <!-- Step 5: permissions -->
+            <div class="wt-frame">
+              <div class="wt-statusbar"><span>9:41</span><span>100%</span></div>
+              <div class="mock-title" style="padding:0 4px;">Allow permissions</div>
+              <div class="mock-row">Usage access <span class="mock-toggle"></span></div>
+              <div class="mock-row">Display over other apps <span class="mock-toggle"></span></div>
+              <div class="mock-sub" style="text-align:center;">Needed for app limits &amp; downtime.</div>
+            </div>
+            <!-- Step 6: done -->
+            <div class="wt-frame">
+              <div class="wt-statusbar"><span>9:41</span><span>100%</span></div>
+              <div class="mock-spacer"></div>
+              <div class="mock-check"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="mock-title" style="text-align:center; margin-top:12px;">Protection active</div>
+              <div class="mock-sub" style="text-align:center;">Web filter &middot; app limits &middot; downtime</div>
+              <div class="mock-spacer"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wt-caption">
+          <span class="step-pill" id="wt-role">On your phone</span>
+          <h3 id="wt-title">Step 1</h3>
+          <p id="wt-text">&hellip;</p>
+          <div class="wt-dots" id="wt-dots"></div>
+          <div class="wt-controls">
+            <button id="wt-prev" type="button" aria-label="Previous step">&lsaquo; Back</button>
+            <button id="wt-playpause" type="button" aria-label="Play or pause">&#10073;&#10073; Pause</button>
+            <button id="wt-next" type="button" aria-label="Next step">Next &rsaquo;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section>
     <div class="container">
       <h2 class="section-title">What you can control</h2>
@@ -126,6 +214,7 @@
     </div>
   </footer>
 
+  <script src="/js/walkthrough.js"></script>
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

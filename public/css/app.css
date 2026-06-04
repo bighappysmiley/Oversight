@@ -235,3 +235,50 @@ section { padding: 64px 0; }
   .side nav a { margin: 0; }
   .main { padding: 22px 18px 60px; }
 }
+
+/* ---------- Android setup walkthrough ---------- */
+.wt { display: grid; grid-template-columns: 300px 1fr; gap: 44px; align-items: center; max-width: 920px; margin: 0 auto; }
+.phone { width: 280px; height: 568px; margin: 0 auto; border-radius: 40px; background: #0f1226; padding: 13px; box-shadow: var(--shadow-lg); border: 2px solid #2a2f63; position: relative; }
+.phone .notch { position: absolute; top: 13px; left: 50%; transform: translateX(-50%); width: 118px; height: 20px; background: #0f1226; border-radius: 0 0 14px 14px; z-index: 4; }
+.phone .screen { position: relative; width: 100%; height: 100%; border-radius: 28px; overflow: hidden; background: var(--surface-2); }
+.wt-frame { position: absolute; inset: 0; padding: 16px 15px; display: flex; flex-direction: column; gap: 11px; opacity: 0; transform: translateY(8px); transition: opacity .45s ease, transform .45s ease; pointer-events: none; }
+.wt-frame.active { opacity: 1; transform: none; pointer-events: auto; }
+.wt-statusbar { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-soft); padding: 0 4px; }
+
+.mock-bar { display: flex; align-items: center; gap: 7px; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; font-size: 12px; color: var(--ink-soft); }
+.mock-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #d6dae8; flex: none; }
+.mock-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 13px; }
+.mock-title { font-weight: 700; font-size: 14px; }
+.mock-sub { color: var(--ink-soft); font-size: 12px; }
+.mock-btn { background: var(--brand); color: #fff; text-align: center; font-weight: 650; font-size: 13px; padding: 11px; border-radius: 10px; }
+.mock-code { text-align: center; letter-spacing: 4px; font-weight: 800; color: var(--brand); border: 2px dashed var(--brand); border-radius: 10px; padding: 12px; font-size: 20px; background: #fff; }
+.mock-field { border: 1px solid var(--line); border-radius: 10px; padding: 11px; font-size: 15px; letter-spacing: 3px; font-weight: 700; color: var(--ink); background: #fff; text-align: center; }
+.mock-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; font-size: 13px; }
+.mock-toggle { width: 38px; height: 22px; border-radius: 999px; background: var(--brand); position: relative; flex: none; }
+.mock-toggle::after { content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #fff; top: 3px; right: 3px; }
+.mock-bar2 { height: 8px; border-radius: 999px; background: #e4e7f2; overflow: hidden; }
+.mock-bar2 > span { display: block; height: 100%; background: var(--brand); border-radius: 999px; }
+.mock-dialog { background: #fff; border-radius: 14px; padding: 15px; box-shadow: var(--shadow); }
+.mock-dialog .acts { display: flex; gap: 16px; justify-content: flex-end; margin-top: 14px; font-weight: 700; font-size: 13px; }
+.mock-dialog .acts .ok { color: var(--brand); }
+.mock-dialog .acts .no { color: var(--ink-soft); }
+.mock-check { width: 64px; height: 64px; border-radius: 50%; background: var(--ok); display: grid; place-items: center; margin: 0 auto; }
+.mock-spacer { flex: 1; }
+.mock-applogo { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--brand); justify-content: center; font-size: 15px; }
+
+.wt-caption .step-pill { display: inline-flex; align-items: center; gap: 7px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-soft); font-weight: 700; font-size: 12px; padding: 5px 12px; border-radius: 999px; }
+.wt-caption h3 { font-size: clamp(20px, 2.6vw, 26px); margin: 16px 0 10px; }
+.wt-caption p { color: var(--ink-soft); font-size: 16px; margin: 0 0 22px; min-height: 52px; }
+.wt-dots { display: flex; gap: 8px; margin-bottom: 18px; }
+.wt-dot { width: 10px; height: 10px; border-radius: 999px; background: #cdd1e4; border: none; padding: 0; cursor: pointer; transition: .25s; }
+.wt-dot.active { background: var(--brand); width: 26px; }
+.wt-controls { display: flex; align-items: center; gap: 10px; }
+.wt-controls button { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 9px 14px; font: inherit; font-weight: 650; cursor: pointer; color: var(--ink); }
+.wt-controls button:hover { background: var(--surface-2); }
+
+@media (max-width: 820px) {
+  .wt { grid-template-columns: 1fr; gap: 26px; }
+  .wt-caption { text-align: center; }
+  .wt-dots { justify-content: center; }
+  .wt-controls { justify-content: center; }
+}
