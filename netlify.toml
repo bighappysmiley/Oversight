@@ -37,6 +37,12 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
+# The kill-switch service worker must never be cached.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
 # The Android package, when present, should always download rather than render.
 [[headers]]
   for = "/downloads/*"
