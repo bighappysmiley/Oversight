@@ -44,14 +44,23 @@
     <div class="container">
       <h2 class="section-title">See Oversight in action</h2>
       <p class="section-sub">A quick look at how Oversight helps you protect your child's device.</p>
-      <div style="max-width:860px; margin:0 auto;">
-        <video controls preload="metadata" playsinline
-               style="width:100%; border-radius:14px; box-shadow:var(--shadow-lg); background:#000; display:block;">
-          <source src="/media/oversight-advertisement.mp4" type="video/mp4" />
-          Your browser can't play this video.
-          <a href="/media/oversight-advertisement.mp4">Download it here.</a>
-        </video>
+      <div class="vslider" id="vslider">
+        <div class="vslide active">
+          <video controls preload="metadata" playsinline>
+            <source src="/media/oversight-advertisement.mp4" type="video/mp4" />
+            Your browser can't play this video. <a href="/media/oversight-advertisement.mp4">Download it here.</a>
+          </video>
+        </div>
+        <div class="vslide">
+          <video controls preload="metadata" playsinline>
+            <source src="/media/oversight-intro.mp4" type="video/mp4" />
+            Your browser can't play this video. <a href="/media/oversight-intro.mp4">Download it here.</a>
+          </video>
+        </div>
+        <button class="vnav prev" id="v-prev" type="button" aria-label="Previous video">&lsaquo;</button>
+        <button class="vnav next" id="v-next" type="button" aria-label="Next video">&rsaquo;</button>
       </div>
+      <div class="vdots" id="v-dots"></div>
     </div>
   </section>
 
@@ -215,6 +224,7 @@
   </footer>
 
   <script src="/js/walkthrough.js"></script>
+  <script src="/js/vslider.js"></script>
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
