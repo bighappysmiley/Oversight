@@ -64,6 +64,10 @@ async function loadPolicyFor(target) {
   const { policy } = await apiGet('/api/policy' + policyQuery());
   state.policy = policy;
   state.mode = policy.mode || 'auto';
+  // Normalise app-control fields for older/default policies.
+  state.policy.blockedApps = Array.isArray(policy.blockedApps) ? policy.blockedApps : [];
+  state.policy.appLimits = policy.appLimits && typeof policy.appLimits === 'object' ? policy.appLimits : {};
+  state.policy.downtime = policy.downtime || { enabled: false, start: '21:00', end: '07:00' };
   el('t-adult').checked = !!policy.filterAdultContent;
   el('t-safe').checked = !!policy.safeSearch;
   el('t-social').checked = !!policy.blockSocialMedia;
@@ -72,6 +76,71 @@ async function loadPolicyFor(target) {
     : 'These rules apply to this device only.';
   renderMode();
   renderTags();
+  renderAppControls();
+}
+
+function renderAppControls() {
+  const p = state.policy;
+  el('t-store').checked = !!p.blockAppStore;
+  el('t-downtime').checked = !!(p.downtime && p.downtime.enabled);
+  el('dt-start').value = (p.downtime && p.downtime.start) || '21:00';
+  el('dt-end').value = (p.downtime && p.downtime.end) || '07:00';
+  el('downtime-times').style.display = el('t-downtime').checked ? 'flex' : 'none';
+  renderAppsList();
+}
+
+function renderAppsList() {
+  const c = el('apps-list');
+  const hint = el('apps-hint');
+  c.innerHTML = '';
+  if (state.target === 'default') {
+    hint.textContent = 'Select a specific device above to block or limit its apps.';
+    return;
+  }
+  const device = state.devices.find((d) => d.id === state.target);
+  if (device && device.platform === 'ios') {
+    hint.textContent = 'App controls apply to Android devices. iPhone needs MDM (see docs).';
+    return;
+  }
+  const apps = (device && device.apps) || [];
+  if (!apps.length) {
+    hint.textContent = 'No apps reported yet. They appear after the Oversight app syncs from the device.';
+    return;
+  }
+  hint.textContent = 'Block an app, or set a daily limit in minutes.';
+  apps.forEach((app) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const blocked = (state.policy.blockedApps || []).includes(app.pkg);
+    const limit = (state.policy.appLimits || {})[app.pkg];
+    row.innerHTML = `
+      <div class="row-main"><div class="row-title">${escapeHtml(app.label || app.pkg)}</div><div class="row-desc">${escapeHtml(app.pkg)}</div></div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <input type="number" min="0" max="1440" placeholder="min/day" value="${limit != null ? limit : ''}" data-limit="${escapeHtml(app.pkg)}" style="width:92px;" />
+        <label class="switch"><input type="checkbox" data-block="${escapeHtml(app.pkg)}" ${blocked ? 'checked' : ''}/><span class="track"></span></label>
+      </div>`;
+    c.appendChild(row);
+  });
+  c.querySelectorAll('[data-block]').forEach((cb) => {
+    cb.addEventListener('change', () => {
+      const pkg = cb.getAttribute('data-block');
+      state.policy.blockedApps = state.policy.blockedApps || [];
+      if (cb.checked) {
+        if (!state.policy.blockedApps.includes(pkg)) state.policy.blockedApps.push(pkg);
+      } else {
+        state.policy.blockedApps = state.policy.blockedApps.filter((p) => p !== pkg);
+      }
+    });
+  });
+  c.querySelectorAll('[data-limit]').forEach((inp) => {
+    inp.addEventListener('input', () => {
+      const pkg = inp.getAttribute('data-limit');
+      state.policy.appLimits = state.policy.appLimits || {};
+      const v = parseInt(inp.value, 10);
+      if (Number.isFinite(v) && v >= 0) state.policy.appLimits[pkg] = v;
+      else delete state.policy.appLimits[pkg];
+    });
+  });
 }
 
 function renderMode() {
@@ -169,6 +238,14 @@ async function savePolicy() {
     blockedDomains: state.policy.blockedDomains || [],
     allowedDomains: state.policy.allowedDomains || [],
     blockedCategories: state.policy.blockedCategories || [],
+    blockAppStore: el('t-store').checked,
+    downtime: {
+      enabled: el('t-downtime').checked,
+      start: el('dt-start').value || '21:00',
+      end: el('dt-end').value || '07:00',
+    },
+    blockedApps: state.policy.blockedApps || [],
+    appLimits: state.policy.appLimits || {},
   };
   try {
     const { policy } = await apiPut('/api/policy' + policyQuery(), body);
@@ -357,6 +434,9 @@ function wireUp() {
   el('blocked-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addDomain('blocked-input', 'blockedDomains'); } });
   el('allowed-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addDomain('allowed-input', 'allowedDomains'); } });
   el('save-policy').addEventListener('click', savePolicy);
+  el('t-downtime').addEventListener('change', () => {
+    el('downtime-times').style.display = el('t-downtime').checked ? 'flex' : 'none';
+  });
 
   // protection
   el('save-prot').addEventListener('click', saveProtection);

@@ -186,6 +186,12 @@ export function defaultPolicy() {
     blockedDomains: [],
     allowedDomains: [],
     blockedCategories: ['adult', 'gambling', 'violence'],
+    // App & time controls (enforced by the Android app; iOS needs MDM — see
+    // docs/ios-advanced-controls.md).
+    blockAppStore: false,
+    downtime: { enabled: false, start: '21:00', end: '07:00' },
+    blockedApps: [], // package names always blocked
+    appLimits: {}, // { "com.package": dailyMinutes }
     updatedAt: new Date().toISOString(),
   };
 }

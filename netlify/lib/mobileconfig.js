@@ -103,6 +103,13 @@ export function buildProfile({ org = 'Oversight', suffix, removalPassword, polic
     forceAssistantProfanityFilter: true,
   };
 
+  // App Store blocking only takes effect on a supervised (MDM) device; the keys
+  // are harmlessly ignored on an unsupervised device. See docs/ios-advanced-controls.md.
+  if (policy.blockAppStore) {
+    restrictions.allowAppInstallation = false;
+    restrictions.allowUIAppInstallation = false;
+  }
+
   const removal = {
     PayloadType: 'com.apple.profileRemovalPassword',
     PayloadVersion: 1,

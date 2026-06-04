@@ -8,6 +8,10 @@ import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
+import android.os.Process
+import android.app.AppOpsManager
+import android.net.Uri
+import android.provider.Settings
 import android.text.InputType
 import android.view.View
 import android.widget.Button
@@ -36,6 +40,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var policySummary: TextView
     private lateinit var removeButton: Button
     private lateinit var reapplyButton: Button
+    private lateinit var permStatus: TextView
+    private lateinit var grantUsage: Button
+    private lateinit var grantOverlay: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,10 +60,17 @@ class MainActivity : AppCompatActivity() {
         policySummary = findViewById(R.id.policySummary)
         removeButton = findViewById(R.id.removeButton)
         reapplyButton = findViewById(R.id.reapplyButton)
+        permStatus = findViewById(R.id.permStatus)
+        grantUsage = findViewById(R.id.grantUsage)
+        grantOverlay = findViewById(R.id.grantOverlay)
 
         enrollButton.setOnClickListener { doEnroll() }
         removeButton.setOnClickListener { promptRemove() }
         reapplyButton.setOnClickListener { reapply() }
+        grantUsage.setOnClickListener { startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) }
+        grantOverlay.setOnClickListener {
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+        }
 
         maybeRequestNotificationPermission()
         render()
@@ -69,8 +83,47 @@ class MainActivity : AppCompatActivity() {
         if (enrolled) {
             statusText.text = "Protection active on “${PolicyStore.deviceName(this)}”"
             policySummary.text = PolicyStore.summary(this)
+            updatePermUi()
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        if (PolicyStore.isEnrolled(this)) {
+            updatePermUi()
+            ContextCompat.startForegroundService(this, Intent(this, AppGuardService::class.java))
+        }
+    }
+
+    private fun updatePermUi() {
+        val usage = hasUsageAccess()
+        val overlay = hasOverlay()
+        grantUsage.visibility = if (usage) View.GONE else View.VISIBLE
+        grantOverlay.visibility = if (overlay) View.GONE else View.VISIBLE
+        permStatus.text = if (usage && overlay) {
+            "App limits, downtime and store blocking are ready."
+        } else {
+            "To enforce app limits, downtime and store blocking, grant the permission(s) below."
+        }
+    }
+
+    private fun startGuardAndReport() {
+        ContextCompat.startForegroundService(this, Intent(this, AppGuardService::class.java))
+        Thread { runCatching { AppInventory.report(this) } }.start()
+    }
+
+    private fun hasUsageAccess(): Boolean {
+        val appOps = getSystemService(AppOpsManager::class.java) ?: return false
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), packageName)
+        } else {
+            @Suppress("DEPRECATION")
+            appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), packageName)
+        }
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun hasOverlay(): Boolean = Settings.canDrawOverlays(this)
 
     // ---------- enrollment ----------
     private fun doEnroll() {
@@ -127,6 +180,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startVpn() {
         ContextCompat.startForegroundService(this, Intent(this, FilterVpnService::class.java))
+        startGuardAndReport()
         render()
     }
 
@@ -182,6 +236,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun doRemove() {
         startService(Intent(this, FilterVpnService::class.java).apply { action = FilterVpnService.ACTION_STOP })
+        startService(Intent(this, AppGuardService::class.java).apply { action = AppGuardService.ACTION_STOP })
         val dpm = getSystemService(DevicePolicyManager::class.java)!!
         val admin = ComponentName(this, OversightAdminReceiver::class.java)
         if (dpm.isAdminActive(admin)) dpm.removeActiveAdmin(admin)

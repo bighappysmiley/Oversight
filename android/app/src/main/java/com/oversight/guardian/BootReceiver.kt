@@ -15,6 +15,7 @@ class BootReceiver : BroadcastReceiver() {
         if (VpnService.prepare(context) == null) {
             ContextCompat.startForegroundService(context, Intent(context, FilterVpnService::class.java))
         }
+        ContextCompat.startForegroundService(context, Intent(context, AppGuardService::class.java))
         SyncWorker.schedule(context)
     }
 }

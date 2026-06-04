@@ -110,6 +110,27 @@
                 android:layout_marginTop="12dp"
                 android:textSize="15sp" />
 
+            <TextView
+                android:id="@+id/permStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/grantUsage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Allow &#8216;Usage access&#8217;" />
+
+            <Button
+                android:id="@+id/grantOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Allow &#8216;Display over other apps&#8217;" />
+
             <Button
                 android:id="@+id/reapplyButton"
                 android:layout_width="match_parent"
