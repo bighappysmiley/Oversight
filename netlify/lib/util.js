@@ -179,10 +179,10 @@ export function publicAccount(account) {
 // ---------------------------------------------------------------------------
 export function defaultPolicy() {
   return {
+    mode: 'auto', // 'auto' | 'blocklist' | 'allowlist'
     filterAdultContent: true,
     safeSearch: true,
     blockSocialMedia: false,
-    mode: 'blocklist', // 'blocklist' | 'allowlist'
     blockedDomains: [],
     allowedDomains: [],
     blockedCategories: ['adult', 'gambling', 'violence'],
@@ -190,9 +190,33 @@ export function defaultPolicy() {
   };
 }
 
-export async function getPolicy(accountId) {
-  const stored = await stores.policies().get(accountId, { type: 'json' });
-  return stored || defaultPolicy();
+// Policies are stored per device, with an account-level "default" template that
+// new devices inherit when they enroll.
+export const defaultPolicyKey = (accountId) => `default:${accountId}`;
+export const devicePolicyKey = (accountId, deviceId) => `${accountId}:${deviceId}`;
+
+// Returns the effective policy: the device's own policy if set, otherwise the
+// account default template, otherwise the hard-coded default.
+export async function getPolicy(accountId, deviceId = null) {
+  const store = stores.policies();
+  if (deviceId) {
+    const dp = await store.get(devicePolicyKey(accountId, deviceId), { type: 'json' });
+    if (dp) return dp;
+  }
+  const def = await store.get(defaultPolicyKey(accountId), { type: 'json' });
+  return def || defaultPolicy();
+}
+
+// Ensures a device has its own policy, copying the account default at first use.
+export async function ensureDevicePolicy(accountId, deviceId) {
+  const store = stores.policies();
+  const key = devicePolicyKey(accountId, deviceId);
+  const existing = await store.get(key, { type: 'json' });
+  if (existing) return existing;
+  const def = (await store.get(defaultPolicyKey(accountId), { type: 'json' })) || defaultPolicy();
+  const copy = { ...def, updatedAt: new Date().toISOString() };
+  await store.setJSON(key, copy);
+  return copy;
 }
 
 // Domains we always recommend blocking when "filter adult content" is on.

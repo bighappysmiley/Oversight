@@ -11,6 +11,7 @@ import {
   methodNotAllowed,
   isValidEmail,
   defaultPolicy,
+  defaultPolicyKey,
 } from '../lib/util.js';
 
 export default async (req) => {
@@ -41,7 +42,7 @@ export default async (req) => {
   };
 
   await saveAccount(account);
-  await stores.policies().setJSON(account.id, defaultPolicy());
+  await stores.policies().setJSON(defaultPolicyKey(account.id), defaultPolicy());
 
   const token = await signToken({ aid: account.id });
   return json(
