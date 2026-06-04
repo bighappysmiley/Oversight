@@ -99,7 +99,7 @@ function renderAppsList() {
   }
   const device = state.devices.find((d) => d.id === state.target);
   if (device && device.platform === 'ios') {
-    hint.textContent = 'App controls apply to Android devices. iPhone needs MDM (see docs).';
+    hint.textContent = 'App controls apply to Android devices. iPhone & iPad support is coming soon.';
     return;
   }
   const apps = (device && device.apps) || [];

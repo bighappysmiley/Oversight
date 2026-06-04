@@ -43,6 +43,7 @@ function showPlatform(suggestedName) {
   document.getElementById('intro').textContent = 'Follow the steps below to protect this device.';
 
   const nameInput = document.getElementById('dev-name');
+  const nameField = nameInput.closest('.field');
   if (suggestedName) nameInput.value = suggestedName;
 
   const os = detectOS();
@@ -50,15 +51,8 @@ function showPlatform(suggestedName) {
   document.getElementById('android-block').hidden = os !== 'android';
   document.getElementById('other-block').hidden = os === 'ios' || os === 'android';
 
-  if (os === 'ios') {
-    const link = document.getElementById('ios-install');
-    const setHref = () => {
-      const name = encodeURIComponent(nameInput.value || 'iOS device');
-      link.href = `/api/profile?code=${encodeURIComponent(currentCode)}&name=${name}`;
-    };
-    setHref();
-    nameInput.addEventListener('input', setHref);
-  }
+  // The device name is only used by the Android setup flow.
+  if (nameField) nameField.style.display = os === 'android' ? '' : 'none';
 
   if (os === 'android') {
     document.getElementById('android-code').textContent = currentCode;
