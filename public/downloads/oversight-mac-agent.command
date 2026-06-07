@@ -13,7 +13,7 @@
 # ============================================================
 set -e
 
-SERVER_DEFAULT="https://oversight.netlify.app"
+SERVER_DEFAULT="https://oversight.bhswebsite.org"
 echo "=== Oversight Mac setup ==="
 read -r -p "Server URL [$SERVER_DEFAULT]: " SERVER
 SERVER="${SERVER:-$SERVER_DEFAULT}"
