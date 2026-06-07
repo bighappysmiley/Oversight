@@ -12,19 +12,24 @@ CODE=$(printf %s "$2" | tr '[:lower:]' '[:upper:]' | tr -d ' ')
 NAME=$(scutil --get ComputerName 2>/dev/null || echo "Mac")
 ENC=$(printf %s "$NAME" | sed 's/ /%20/g')
 
-# Try the address passed by the app first, then known-good fallbacks, so a
-# custom-domain hiccup never dead-ends setup. Whichever answers becomes SERVER.
-SERVER=""
-RESP=""
+# Enroll against the address from the app first, then known-good fallbacks, so a
+# slow or misconfigured custom domain never dead-ends setup. Short timeouts keep
+# a bad address from hanging for minutes; a candidate only "wins" if it returns a
+# real device token, so an address that serves a plain web page is skipped.
+SERVER=""; TOKEN=""; TRIED=""
 for cand in "$PRIMARY" "https://oversight.bhswebsite.org" "https://oversight.netlify.app"; do
   cand="${cand%/}"
-  if [ -n "$cand" ] && RESP=$(curl -fsS "$cand/api/android/config?code=$CODE&platform=macos&name=$ENC" 2>/dev/null); then
-    SERVER="$cand"; break
-  fi
+  [ -n "$cand" ] || continue
+  case " $TRIED " in *" $cand "*) continue ;; esac
+  TRIED="$TRIED $cand"
+  RESP=$(curl -fsS --connect-timeout 8 --max-time 25 "$cand/api/android/config?code=$CODE&platform=macos&name=$ENC" 2>/dev/null) || continue
+  TOKEN=$(printf %s "$RESP" | sed -n 's/.*"deviceToken":"\([^"]*\)".*/\1/p')
+  if [ -n "$TOKEN" ]; then SERVER="$cand"; break; fi
 done
-[ -z "$SERVER" ] && { echo "Could not reach the Oversight site. Check your internet connection, then try again." >&2; exit 1; }
-TOKEN=$(printf %s "$RESP" | sed -n 's/.*"deviceToken":"\([^"]*\)".*/\1/p')
-[ -z "$TOKEN" ] && { echo "That setup code is invalid or expired (codes last 1 hour)." >&2; exit 1; }
+if [ -z "$TOKEN" ]; then
+  echo "That setup code didn't work. Open the dashboard, generate a fresh code (they expire after 1 hour), and run Oversight again." >&2
+  exit 1
+fi
 
 mkdir -p /usr/local/etc/oversight /usr/local/bin
 printf 'SERVER=%s\nTOKEN=%s\n' "$SERVER" "$TOKEN" > /usr/local/etc/oversight/config
@@ -33,7 +38,7 @@ chmod 600 /usr/local/etc/oversight/config
 cat > /usr/local/bin/oversight-agent.sh <<'AGENT'
 #!/bin/bash
 . /usr/local/etc/oversight/config 2>/dev/null || exit 0
-DATA=$(curl -fsS -H "X-Device-Token: $TOKEN" "$SERVER/api/agent/hosts") || exit 0
+DATA=$(curl -fsS --connect-timeout 8 --max-time 25 -H "X-Device-Token: $TOKEN" "$SERVER/api/agent/hosts") || exit 0
 [ -z "$DATA" ] && exit 0
 SAFEDNS=$(printf %s "$DATA" | head -1 | sed -n 's/.*safedns=\([a-z]*\).*/\1/p')
 networksetup -listallnetworkservices | tail -n +2 | sed 's/^\*//' | while IFS= read -r svc; do
