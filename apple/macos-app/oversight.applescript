@@ -3,9 +3,15 @@
 -- then installs the syncing agent using the standard macOS admin-password
 -- prompt (no Terminal). The heavy lifting is in Resources/install-agent.sh.
 on run
-	set defaultServer to "https://oversight.netlify.app"
+	-- Bring the app to the front first. A double-clicked applet can launch in
+	-- the background, leaving its dialogs non-interactive (the window shows a
+	-- spinning beachball and you can't type or click Next). Activating fixes it.
+	tell me to activate
+
+	-- Site address is baked in so families never have to type a URL.
+	set theServer to "https://oversight.bhswebsite.org"
+
 	try
-		set theServer to text returned of (display dialog "Enter your Oversight site address:" default answer defaultServer with title "Oversight" buttons {"Cancel", "Next"} default button "Next")
 		set theCode to text returned of (display dialog "Enter the setup code shown in the parent dashboard:" default answer "" with title "Oversight" buttons {"Cancel", "Protect this Mac"} default button "Protect this Mac")
 	on error number -128
 		return

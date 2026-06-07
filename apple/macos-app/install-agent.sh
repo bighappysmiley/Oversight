@@ -5,16 +5,24 @@
 # minute (Safe DNS + blocked sites).
 set -e
 
-SERVER="${1%/}"
+PRIMARY="${1%/}"
 CODE=$(printf %s "$2" | tr '[:lower:]' '[:upper:]' | tr -d ' ')
-[ -z "$SERVER" ] && { echo "Missing server address." >&2; exit 1; }
 [ -z "$CODE" ] && { echo "Missing setup code." >&2; exit 1; }
 
 NAME=$(scutil --get ComputerName 2>/dev/null || echo "Mac")
 ENC=$(printf %s "$NAME" | sed 's/ /%20/g')
 
-RESP=$(curl -fsS "$SERVER/api/android/config?code=$CODE&platform=macos&name=$ENC") \
-  || { echo "Could not reach $SERVER. Check the address and your internet connection." >&2; exit 1; }
+# Try the address passed by the app first, then known-good fallbacks, so a
+# custom-domain hiccup never dead-ends setup. Whichever answers becomes SERVER.
+SERVER=""
+RESP=""
+for cand in "$PRIMARY" "https://oversight.bhswebsite.org" "https://oversight.netlify.app"; do
+  cand="${cand%/}"
+  if [ -n "$cand" ] && RESP=$(curl -fsS "$cand/api/android/config?code=$CODE&platform=macos&name=$ENC" 2>/dev/null); then
+    SERVER="$cand"; break
+  fi
+done
+[ -z "$SERVER" ] && { echo "Could not reach the Oversight site. Check your internet connection, then try again." >&2; exit 1; }
 TOKEN=$(printf %s "$RESP" | sed -n 's/.*"deviceToken":"\([^"]*\)".*/\1/p')
 [ -z "$TOKEN" ] && { echo "That setup code is invalid or expired (codes last 1 hour)." >&2; exit 1; }
 
