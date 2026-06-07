@@ -99,8 +99,8 @@ function renderAppsList() {
     return;
   }
   const device = state.devices.find((d) => d.id === state.target);
-  if (device && device.platform === 'ios') {
-    hint.textContent = 'App controls apply to Android devices. iPhone & iPad support is coming soon.';
+  if (device && device.platform !== 'android') {
+    hint.textContent = 'App limits apply to Android. Apple devices and computers use web + Safe DNS filtering.';
     return;
   }
   const apps = (device && device.apps) || [];
@@ -290,6 +290,9 @@ async function saveProtection() {
 function deviceIcon(platform) {
   if (platform === 'android') {
     return '<svg width="22" height="22" viewBox="0 0 24 24" fill="#18b8a6"><path d="M6 18c0 .6.4 1 1 1h10c.6 0 1-.4 1-1V8H6v10zM3.5 8C2.7 8 2 8.7 2 9.5v6a1.5 1.5 0 003 0v-6C5 8.7 4.3 8 3.5 8zm17 0c-.8 0-1.5.7-1.5 1.5v6a1.5 1.5 0 003 0v-6c0-.8-.7-1.5-1.5-1.5zM15.5 4l1-1.8-.7-.4-1 1.9C14 3.3 13 3 12 3s-2 .3-2.8.7l-1-1.9-.7.4 1 1.8C7 5 6 6.4 6 8h12c0-1.6-1-3-2.5-4z"/></svg>';
+  }
+  if (platform === 'macos' || platform === 'windows' || platform === 'linux') {
+    return '<svg width="22" height="22" viewBox="0 0 24 24" fill="#4f5bd5"><path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm4 16h8l1 2H7z"/></svg>';
   }
   return '<svg width="22" height="22" viewBox="0 0 24 24" fill="#4f5bd5"><path d="M16 1H8C6.3 1 5 2.3 5 4v16c0 1.7 1.3 3 3 3h8c1.7 0 3-1.3 3-3V4c0-1.7-1.3-3-3-3zm-4 21c-.8 0-1.5-.7-1.5-1.5S11.2 19 12 19s1.5.7 1.5 1.5S12.8 22 12 22zm5-4H7V4h10v14z"/></svg>';
 }

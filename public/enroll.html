@@ -54,13 +54,19 @@
 
         <!-- Mac -->
         <div class="osblock" id="b-mac" hidden>
-          <a class="btn btn-primary btn-block btn-lg" id="mac-install" href="#">Download protection for Mac</a>
-          <ol class="steps-ol" style="margin-top:20px;">
-            <li>Tap <strong>Download protection for Mac</strong> — a <code>.mobileconfig</code> file downloads.</li>
-            <li>Open it, then go to <strong>System Settings → General → VPN &amp; Device Management</strong>.</li>
-            <li>Click the <strong>Oversight</strong> profile and <strong>Install</strong> (you'll need the Mac's admin password).</li>
-            <li>Done — Safe DNS filtering is active for the whole Mac.</li>
+          <div class="row-title" style="margin-bottom:4px;">Recommended — live filtering that syncs</div>
+          <a class="btn btn-primary btn-block btn-lg" id="mac-agent" href="/downloads/oversight-mac-agent.command">Download Oversight for Mac</a>
+          <p class="muted" style="margin-top:10px;">Your setup code:</p>
+          <div class="code-box" id="mac-code">--------</div>
+          <ol class="steps-ol" style="margin-top:8px;">
+            <li>Open <strong>Terminal</strong> (press ⌘-Space, type <em>Terminal</em>, Return).</li>
+            <li>Paste this and press Return: <code>bash ~/Downloads/oversight-mac-agent.command</code></li>
+            <li>Enter the Mac's <strong>admin password</strong>, then the setup code above.</li>
+            <li>Done — it pulls your dashboard settings every minute and can't be removed without an admin password.</li>
           </ol>
+          <hr style="border:none; border-top:1px solid var(--line); margin:18px 0;" />
+          <div class="row-desc" style="margin-bottom:8px;">Or a quick profile (Safe DNS only — <strong>does not sync</strong> with later changes):</div>
+          <a class="btn btn-ghost btn-block" id="mac-install" href="#">Download quick profile</a>
         </div>
 
         <!-- Android -->

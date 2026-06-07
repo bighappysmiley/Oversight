@@ -112,6 +112,7 @@ function showBlock(key, sub, btn) {
     upd();
     name.oninput = upd;
   } else if (key === 'mac') {
+    document.getElementById('mac-code').textContent = currentCode;
     const link = document.getElementById('mac-install');
     const upd = () => {
       link.href = '/api/profile?code=' + encodeURIComponent(currentCode) +
