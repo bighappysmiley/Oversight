@@ -1,4 +1,23 @@
-# Oversight Apple app (iOS + macOS)
+# Oversight Apple apps
+
+There are two pieces here:
+
+1. **`macos-app/` — the double‑click Mac app (no Xcode needed).** An AppleScript
+   app that asks for the setup code, then installs the syncing agent using the
+   standard macOS admin‑password prompt. **CI builds it for you** on a macOS
+   runner (`.github/workflows/build-mac-app.yml`) and produces `Oversight-Mac.zip`
+   as a build artifact (and a release asset on a `v*` tag). Drop that zip at
+   `public/downloads/Oversight-Mac.zip` so the site can serve it.
+   - To build locally on a Mac: `cd apple/macos-app && osacompile -o Oversight.app oversight.applescript && cp install-agent.sh Oversight.app/Contents/Resources/`.
+   - Unsigned apps trigger Gatekeeper — first launch is **right‑click → Open**.
+     Signing/notarizing with an Apple Developer ID removes that warning.
+
+2. **The SwiftUI Xcode project (below)** — a native starting point if you want a
+   richer app (and a future Network Extension for app‑level enforcement).
+
+---
+
+# Oversight SwiftUI app (iOS + macOS)
 
 A native SwiftUI app you can open in **Xcode** and build into a real `.app`
 (macOS) or `.ipa` (iOS/iPadOS). It pairs the device with a parent account by

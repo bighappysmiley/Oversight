@@ -54,19 +54,22 @@
 
         <!-- Mac -->
         <div class="osblock" id="b-mac" hidden>
-          <div class="row-title" style="margin-bottom:4px;">Recommended — live filtering that syncs</div>
-          <a class="btn btn-primary btn-block btn-lg" id="mac-agent" href="/downloads/oversight-mac-agent.command">Download Oversight for Mac</a>
+          <a class="btn btn-primary btn-block btn-lg" id="mac-app" href="/downloads/Oversight-Mac.zip">Download Oversight for Mac</a>
           <p class="muted" style="margin-top:10px;">Your setup code:</p>
           <div class="code-box" id="mac-code">--------</div>
           <ol class="steps-ol" style="margin-top:8px;">
-            <li>Open <strong>Terminal</strong> (press ⌘-Space, type <em>Terminal</em>, Return).</li>
-            <li>Paste this and press Return: <code>bash ~/Downloads/oversight-mac-agent.command</code></li>
-            <li>Enter the Mac's <strong>admin password</strong>, then the setup code above.</li>
-            <li>Done — it pulls your dashboard settings every minute and can't be removed without an admin password.</li>
+            <li>Open the downloaded <strong>Oversight</strong> app. (First time only: right-click it → <strong>Open</strong> → <strong>Open</strong>.)</li>
+            <li>Type the setup code above when the app asks.</li>
+            <li>Enter the Mac's <strong>admin password</strong> in the system prompt.</li>
+            <li>Done — it keeps your dashboard settings in sync and can't be removed without an admin password.</li>
           </ol>
           <hr style="border:none; border-top:1px solid var(--line); margin:18px 0;" />
-          <div class="row-desc" style="margin-bottom:8px;">Or a quick profile (Safe DNS only — <strong>does not sync</strong> with later changes):</div>
-          <a class="btn btn-ghost btn-block" id="mac-install" href="#">Download quick profile</a>
+          <details>
+            <summary class="muted" style="cursor:pointer; font-size:13px;">Other options</summary>
+            <div style="margin-top:10px;">
+              <a class="btn btn-ghost btn-block" id="mac-install" href="#">Quick profile — Safe DNS only, doesn't sync</a>
+            </div>
+          </details>
         </div>
 
         <!-- Android -->
