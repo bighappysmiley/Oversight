@@ -1,0 +1,25 @@
+# XcodeGen project definition for the Oversight Apple app (iOS + macOS).
+# Generate the Xcode project with:   cd apple && xcodegen generate
+# then:                              open Oversight.xcodeproj
+name: Oversight
+options:
+  bundleIdPrefix: com.oversight
+  deploymentTarget:
+    iOS: "15.0"
+    macOS: "12.0"
+targets:
+  Oversight:
+    type: application
+    platform: [iOS, macOS]
+    sources:
+      - Oversight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.oversight.app
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Oversight
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        # Set your Apple Developer Team ID here (or pick it in Xcode → Signing).
+        # DEVELOPMENT_TEAM: XXXXXXXXXX

@@ -107,6 +107,11 @@ object PolicyStore {
 
     fun blockAppStore(ctx: Context): Boolean = policy(ctx).optBoolean("blockAppStore", false)
 
+    // Upstream resolver the VPN forwards allowed queries to. The family-safe
+    // resolver blocks adult/malware at the network level.
+    fun upstreamDns(ctx: Context): String =
+        if (policy(ctx).optBoolean("safeDns", true)) "1.1.1.3" else "1.1.1.1"
+
     fun isAppListed(ctx: Context, pkg: String): Boolean {
         val arr = policy(ctx).optJSONArray("blockedApps") ?: return false
         for (i in 0 until arr.length()) if (arr.optString(i) == pkg) return true

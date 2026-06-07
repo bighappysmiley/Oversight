@@ -71,6 +71,7 @@ async function loadPolicyFor(target) {
   el('t-adult').checked = !!policy.filterAdultContent;
   el('t-safe').checked = !!policy.safeSearch;
   el('t-social').checked = !!policy.blockSocialMedia;
+  el('t-safedns').checked = policy.safeDns !== false;
   el('policy-target-hint').textContent = target === 'default'
     ? 'The default applies to devices you add later.'
     : 'These rules apply to this device only.';
@@ -234,6 +235,7 @@ async function savePolicy() {
     mode: state.mode,
     filterAdultContent: el('t-adult').checked,
     safeSearch: el('t-safe').checked,
+    safeDns: el('t-safedns').checked,
     blockSocialMedia: el('t-social').checked,
     blockedDomains: state.policy.blockedDomains || [],
     allowedDomains: state.policy.allowedDomains || [],

@@ -20,6 +20,13 @@ android/local.properties
 # …but allow a distributed APK to be committed for the site to serve.
 !public/downloads/oversight.apk
 
+# Apple / Xcode (the project is generated from apple/project.yml via XcodeGen)
+apple/Oversight.xcodeproj/
+apple/build/
+apple/DerivedData/
+*.xcuserstate
+.swiftpm/
+
 # Editor / OS
 .DS_Store
 *.log

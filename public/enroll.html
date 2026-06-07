@@ -6,7 +6,7 @@
   <title>Set up Oversight</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='3' fill='%234f5bd5'/%3E%3C/svg%3E" />
   <script>if('serviceWorker'in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister();});});if(self.caches&&caches.keys){caches.keys().then(function(k){k.forEach(function(n){caches.delete(n);});});}}</script>
-  <link rel="stylesheet" href="/css/app.css?v=2" />
+  <link rel="stylesheet" href="/css/app.css?v=3" />
 </head>
 <body>
   <header class="site-header">
@@ -22,7 +22,6 @@
     <div class="enroll-card">
       <h1 style="margin-top:0;">Set up protection</h1>
       <p class="muted" id="intro">Enter the setup code from your parent dashboard to protect this device.</p>
-
       <div class="alert" id="alert"></div>
 
       <!-- CODE ENTRY -->
@@ -34,47 +33,77 @@
         <button class="btn btn-primary btn-block btn-lg" id="continue">Continue</button>
       </div>
 
-      <!-- PLATFORM INSTRUCTIONS -->
+      <!-- PLATFORM SETUP -->
       <div id="platform" hidden>
-        <div class="field">
+        <div class="field" id="name-field">
           <label for="dev-name">Name this device (optional)</label>
           <input type="text" id="dev-name" placeholder="e.g. Maya's iPhone" />
         </div>
 
-        <!-- iOS -->
-        <div id="ios-block" hidden>
-          <div class="alert alert-info show">
-            <strong>iPhone &amp; iPad support is coming soon.</strong>
-            <p style="margin:8px 0 0;">We're putting the finishing touches on protection for Apple devices. Full controls on iPhone &amp; iPad need a more advanced setup (like supervising the device from a Mac) — we'll guide you through it when it launches.</p>
-            <p style="margin:8px 0 0;">For now, Oversight protects <strong>Android</strong> phones and tablets.</p>
-          </div>
+        <!-- iPhone / iPad -->
+        <div class="osblock" id="b-ios" hidden>
+          <a class="btn btn-primary btn-block btn-lg" id="ios-install" href="#">Install Oversight protection</a>
+          <ol class="steps-ol" style="margin-top:20px;">
+            <li>Tap <strong>Install Oversight protection</strong> above.</li>
+            <li>Open <strong>Settings</strong> — you'll see <strong>Profile Downloaded</strong> near the top.</li>
+            <li>Tap it, then <strong>Install</strong>, and enter this device's passcode.</li>
+            <li>Done — web filtering and Safe DNS are active.</li>
+          </ol>
+          <p class="muted" style="font-size:13px;">Removing it later needs your parent's protection password.</p>
+        </div>
+
+        <!-- Mac -->
+        <div class="osblock" id="b-mac" hidden>
+          <a class="btn btn-primary btn-block btn-lg" id="mac-install" href="#">Download protection for Mac</a>
+          <ol class="steps-ol" style="margin-top:20px;">
+            <li>Tap <strong>Download protection for Mac</strong> — a <code>.mobileconfig</code> file downloads.</li>
+            <li>Open it, then go to <strong>System Settings → General → VPN &amp; Device Management</strong>.</li>
+            <li>Click the <strong>Oversight</strong> profile and <strong>Install</strong> (you'll need the Mac's admin password).</li>
+            <li>Done — Safe DNS filtering is active for the whole Mac.</li>
+          </ol>
         </div>
 
         <!-- Android -->
-        <div id="android-block" hidden>
+        <div class="osblock" id="b-android" hidden>
           <a class="btn btn-primary btn-block btn-lg" id="android-download" href="/downloads/oversight.apk">Download Oversight app</a>
           <p class="muted" style="margin-top:14px;">Your setup code:</p>
           <div class="code-box" id="android-code">--------</div>
           <ol class="steps-ol" style="margin-top:8px;">
-            <li>Tap <strong>Download Oversight app</strong> and open the downloaded file.</li>
-            <li>If asked, allow installing apps from this browser.</li>
-            <li>Open <strong>Oversight</strong>, enter the setup code above, and set a name.</li>
-            <li>Approve <strong>device administrator</strong> access when prompted.</li>
+            <li>Tap <strong>Download Oversight app</strong> and open the file (allow installs if asked).</li>
+            <li>Open <strong>Oversight</strong>, enter the code above and approve the prompts.</li>
+            <li>Done — web filter, app limits and downtime are active.</li>
           </ol>
-          <p class="muted" style="font-size:13px;">Uninstalling later requires your parent's protection password.</p>
         </div>
 
-        <!-- Other / desktop -->
-        <div id="other-block" hidden>
-          <div class="alert alert-info show">
-            Open this page on the <strong>child's iPhone, iPad, or Android device</strong> to install protection. Oversight protects phones and tablets running iOS or Android.
+        <!-- Windows / Linux / Chromebook -->
+        <div class="osblock" id="b-desktop" hidden>
+          <div class="alert alert-info show">Set this computer's DNS to <strong>Oversight Safe DNS</strong> to block adult content network-wide.</div>
+          <div class="card" style="margin:14px 0;">
+            <div class="row-title">Oversight Safe DNS</div>
+            <div class="row-desc">Preferred: <strong>1.1.1.3</strong> &nbsp;·&nbsp; Alternate: <strong>1.0.0.3</strong></div>
+            <div class="row-desc">DNS-over-HTTPS: <strong>https://family.cloudflare-dns.com/dns-query</strong></div>
+          </div>
+          <div id="desktop-win" hidden>
+            <a class="btn btn-primary btn-block" href="/downloads/oversight-windows-dns.bat">Download Windows helper (.bat)</a>
+            <p class="muted" style="font-size:13px; margin-top:8px;">Right-click the downloaded file → <strong>Run as administrator</strong>. Or set it by hand: Settings → Network → Edit DNS → Manual → 1.1.1.3 and 1.0.0.3.</p>
+          </div>
+          <div id="desktop-linux" hidden>
+            <a class="btn btn-primary btn-block" href="/downloads/oversight-linux-dns.sh">Download Linux helper (.sh)</a>
+            <p class="muted" style="font-size:13px; margin-top:8px;">Run <code>sudo bash oversight-linux-dns.sh</code>. Or set DNS to 1.1.1.3 / 1.0.0.3 in your network settings.</p>
+          </div>
+          <div id="desktop-chrome" hidden>
+            <p class="muted" style="font-size:13px;">On a Chromebook: <strong>Settings → Network → (your Wi-Fi) → Name servers → Custom</strong>, then enter <strong>1.1.1.3</strong> and <strong>1.0.0.3</strong>.</p>
           </div>
         </div>
+
+        <!-- chooser -->
+        <p class="muted" style="font-size:13px; margin-top:22px; text-align:center;">Not the right device?</p>
+        <div class="osswitch" id="osswitch"></div>
       </div>
     </div>
   </div>
 
-  <script src="/js/api.js?v=2"></script>
-  <script src="/js/enroll.js?v=2"></script>
+  <script src="/js/api.js?v=3"></script>
+  <script src="/js/enroll.js?v=3"></script>
 </body>
 </html>

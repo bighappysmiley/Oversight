@@ -66,6 +66,14 @@
         </div>
 
         <div class="panel">
+          <h2>Safe DNS</h2>
+          <div class="row">
+            <div class="row-main"><div class="row-title">Block adult content network-wide</div><div class="row-desc">Routes the device's DNS through a family-safe resolver. Works on iPhone, iPad, Mac, Android, Windows and Linux.</div></div>
+            <label class="switch"><input type="checkbox" id="t-safedns" /><span class="track"></span></label>
+          </div>
+        </div>
+
+        <div class="panel">
           <h2>Filtering mode</h2>
           <p class="panel-sub">How websites are handled on this device.</p>
           <div class="seg" id="mode-seg">
@@ -114,7 +122,7 @@
 
         <div class="panel" id="appcontrol-panel">
           <h2>App &amp; time controls</h2>
-          <p class="panel-sub">Enforced by the Oversight app on <strong>Android</strong>. iPhone &amp; iPad support is coming soon.</p>
+          <p class="panel-sub">App limits, downtime and app blocking are enforced by the Oversight app on <strong>Android</strong>. Apple devices and computers use web + Safe DNS filtering.</p>
 
           <div class="row">
             <div class="row-main"><div class="row-title">Block the app store</div><div class="row-desc">Stop new apps being installed (Play Store on Android).</div></div>
@@ -188,7 +196,7 @@
         </div>
         <p class="muted" style="margin:18px 0 0;">…then enter this setup code:</p>
         <div class="code-box" id="code-display">--------</div>
-        <p class="muted" style="font-size:13px;">This code expires in 1 hour. On Android it installs the Oversight app. iPhone &amp; iPad support is coming soon.</p>
+        <p class="muted" style="font-size:13px;">This code expires in 1 hour. The setup page detects the device and gives the right installer — Apple profile, Android app, or Safe DNS for computers.</p>
         <div style="display:flex; gap:10px; justify-content:flex-end;">
           <button class="btn btn-primary" id="modal-done">Done</button>
         </div>

@@ -32,12 +32,13 @@ export default async (req) => {
 
   const removalPassword = await decryptSecret(account.protectionEnc);
 
-  const deviceId = `ios-${code}`;
+  const isMac = (url.searchParams.get('platform') || 'ios').toLowerCase() === 'macos';
+  const deviceId = `${isMac ? 'mac' : 'ios'}-${code}`;
   await stores.devices().setJSON(`${account.id}:${deviceId}`, {
     id: deviceId,
     accountId: account.id,
     name: enrollment.name || name,
-    platform: 'ios',
+    platform: isMac ? 'macos' : 'ios',
     enrolledAt: new Date().toISOString(),
     lastSeen: new Date().toISOString(),
     status: 'active',
@@ -45,9 +46,10 @@ export default async (req) => {
 
   const policy = await ensureDevicePolicy(account.id, deviceId);
   const profile = buildProfile({
-    suffix: code.toLowerCase(),
+    suffix: `${isMac ? 'mac' : 'ios'}${code.toLowerCase()}`,
     removalPassword,
     policy,
+    platform: isMac ? 'macos' : 'ios',
   });
 
   return new Response(profile, {

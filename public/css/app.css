@@ -224,6 +224,10 @@ section { padding: 64px 0; }
 .os-tile:hover { border-color: var(--brand); }
 .steps-ol { padding-left: 20px; }
 .steps-ol li { margin-bottom: 10px; }
+.osswitch { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+.osswitch button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 600; font-size: 13px; color: var(--ink-soft); cursor: pointer; }
+.osswitch button.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+.osswitch button:hover { border-color: var(--brand); }
 
 @media (max-width: 860px) {
   .grid-3 { grid-template-columns: 1fr; }
