@@ -1,10 +1,16 @@
 # Downloads
 
-The enrollment page links to `/downloads/oversight.apk` for Android devices.
+Files the setup page (`/enroll`) links to:
 
-Place a built `oversight.apk` here, or let the GitHub Actions workflow
-(`.github/workflows/build-android.yml`) build it for you and attach it to a
-release. See `android/README.md` for build instructions.
+| File | Platform | Produced by |
+|---|---|---|
+| `oversight.apk` | Android app | `.github/workflows/build-android.yml` (artifact / release) |
+| `Oversight-Mac.zip` | Mac app (double‑click) | `.github/workflows/build-mac-app.yml` (artifact / release) |
+| `oversight-windows-dns.bat` | Windows Safe DNS helper | committed here |
+| `oversight-linux-dns.sh` | Linux Safe DNS helper | committed here |
+| `oversight-mac-agent.command` | Mac agent (Terminal — advanced) | committed here |
 
-This file is a placeholder so the directory exists in git; the `.apk` itself is
-git-ignored (see the root `.gitignore`).
+The **APK** and **Mac app** are built in CI (binaries aren't committed). Download
+the build artifact (or release asset) and drop it here as `oversight.apk` /
+`Oversight-Mac.zip` so Netlify serves it. The `.bat`/`.sh`/`.command` helpers are
+plain text and committed directly.

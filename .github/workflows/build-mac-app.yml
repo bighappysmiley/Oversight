@@ -1,0 +1,37 @@
+name: Build Mac app
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths:
+      - 'apple/macos-app/**'
+      - '.github/workflows/build-mac-app.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Oversight.app
+        working-directory: apple/macos-app
+        run: |
+          osacompile -o "Oversight.app" oversight.applescript
+          mkdir -p "Oversight.app/Contents/Resources"
+          cp install-agent.sh "Oversight.app/Contents/Resources/install-agent.sh"
+          chmod +x "Oversight.app/Contents/Resources/install-agent.sh"
+          ditto -c -k --sequesterRsrc --keepParent "Oversight.app" "Oversight-Mac.zip"
+
+      - name: Upload app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Oversight-Mac
+          path: apple/macos-app/Oversight-Mac.zip
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: apple/macos-app/Oversight-Mac.zip

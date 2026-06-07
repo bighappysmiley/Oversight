@@ -24,6 +24,9 @@ android/local.properties
 apple/Oversight.xcodeproj/
 apple/build/
 apple/DerivedData/
+apple/macos-app/Oversight.app/
+apple/macos-app/*.zip
+apple/macos-app/*.dmg
 *.xcuserstate
 .swiftpm/
 
