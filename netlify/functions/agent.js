@@ -10,6 +10,7 @@ import {
   json,
   readJson,
   methodNotAllowed,
+  SOCIAL_MEDIA_DOMAINS,
 } from '../lib/util.js';
 
 async function authDevice(req) {
@@ -43,6 +44,29 @@ export default async (req) => {
   if (action === 'checkin' && req.method === 'POST') {
     await touch(ref);
     return json({ ok: true });
+  }
+
+  // Plain-text policy feed for desktop agents (macOS/Windows/Linux). First line
+  // carries directives; the rest are hosts-file block entries.
+  if (action === 'hosts' && req.method === 'GET') {
+    const policy = await getPolicy(ref.accountId, ref.deviceId);
+    await touch(ref);
+    const lines = [];
+    const safedns = policy.safeDns !== false ? 'on' : 'off';
+    lines.push(`# oversight safedns=${safedns} mode=${policy.mode || 'auto'} updated=${policy.updatedAt || ''}`);
+    if (policy.mode !== 'allowlist') {
+      const blocked = new Set(policy.blockedDomains || []);
+      if (policy.blockSocialMedia) for (const d of SOCIAL_MEDIA_DOMAINS) blocked.add(d);
+      const allowed = new Set(policy.allowedDomains || []);
+      for (const d of blocked) {
+        if (allowed.has(d)) continue;
+        lines.push(`0.0.0.0 ${d}`);
+        lines.push(`0.0.0.0 www.${d}`);
+      }
+    }
+    return new Response(lines.join('\n') + '\n', {
+      headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+    });
   }
 
   // The Android app reports the device's installed (launchable) apps so the

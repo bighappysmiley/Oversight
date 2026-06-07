@@ -33,14 +33,17 @@ export default async (req) => {
     return json({ error: 'Account is not ready for enrollment.' }, { status: 400 });
   }
 
-  const deviceId = `and-${code}`;
+  const platforms = { android: 'and', macos: 'mac', windows: 'win', linux: 'lnx' };
+  const reqPlat = (url.searchParams.get('platform') || 'android').toLowerCase();
+  const plat = platforms[reqPlat] ? reqPlat : 'android';
+  const deviceId = `${platforms[plat]}-${code}`;
   const token = crypto.randomBytes(24).toString('hex');
 
   await stores.devices().setJSON(`${account.id}:${deviceId}`, {
     id: deviceId,
     accountId: account.id,
     name: enrollment.name || name,
-    platform: 'android',
+    platform: plat,
     token,
     enrolledAt: new Date().toISOString(),
     lastSeen: new Date().toISOString(),
