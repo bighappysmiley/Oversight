@@ -3,11 +3,13 @@ name: Build Mac app
 on:
   push:
     branches: [main]
-    tags: ['v*']
     paths:
       - 'apple/macos-app/**'
       - '.github/workflows/build-mac-app.yml'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -30,8 +32,12 @@ jobs:
           name: Oversight-Mac
           path: apple/macos-app/Oversight-Mac.zip
 
-      - name: Attach to release
-        if: startsWith(github.ref, 'refs/tags/')
+      # Public repo → this download URL is stable and updates on every main push:
+      # https://github.com/bighappysmiley/Oversight/releases/download/mac-latest/Oversight-Mac.zip
+      - name: Publish to rolling release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: mac-latest
+          name: Oversight for Mac (latest)
+          prerelease: true
           files: apple/macos-app/Oversight-Mac.zip
