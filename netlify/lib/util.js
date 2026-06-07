@@ -182,6 +182,7 @@ export function defaultPolicy() {
     mode: 'auto', // 'auto' | 'blocklist' | 'allowlist'
     filterAdultContent: true,
     safeSearch: true,
+    safeDns: true, // route DNS through the family-filtering resolver
     blockSocialMedia: false,
     blockedDomains: [],
     allowedDomains: [],
@@ -224,6 +225,16 @@ export async function ensureDevicePolicy(accountId, deviceId) {
   await store.setJSON(key, copy);
   return copy;
 }
+
+// The family-filtering DNS resolver Oversight points devices at. Cloudflare
+// for Families (1.1.1.3) blocks adult content + malware, is free, needs no
+// signup, and supports encrypted DNS-over-HTTPS.
+export const SAFE_DNS = {
+  name: 'Oversight Safe DNS',
+  doh: 'https://family.cloudflare-dns.com/dns-query',
+  v4: ['1.1.1.3', '1.0.0.3'],
+  v6: ['2606:4700:4700::1113', '2606:4700:4700::1003'],
+};
 
 // Domains we always recommend blocking when "filter adult content" is on.
 // Kept short; the BuiltIn iOS filter and category filtering do the heavy

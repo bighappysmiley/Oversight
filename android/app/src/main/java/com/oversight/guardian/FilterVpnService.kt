@@ -109,7 +109,7 @@ class FilterVpnService : VpnService() {
             DatagramSocket().use { socket ->
                 protect(socket)
                 socket.soTimeout = 5000
-                val upstream = InetAddress.getByName(UPSTREAM_DNS)
+                val upstream = InetAddress.getByName(PolicyStore.upstreamDns(this@FilterVpnService))
                 socket.send(DatagramPacket(query, query.size, upstream, 53))
                 val buf = ByteArray(4096)
                 val reply = DatagramPacket(buf, buf.size)
@@ -228,7 +228,6 @@ class FilterVpnService : VpnService() {
         const val ACTION_STOP = "com.oversight.guardian.STOP"
         private const val VIRTUAL_ADDR = "10.111.111.2"
         private const val VIRTUAL_DNS = "10.111.111.1"
-        private const val UPSTREAM_DNS = "1.1.1.1"
         private const val CHANNEL = "oversight_vpn"
         private const val NOTIF_ID = 42
     }

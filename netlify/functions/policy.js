@@ -97,6 +97,7 @@ export default async (req) => {
       // Automatic mode always filters adult content.
       filterAdultContent: mode === 'auto' ? true : (body.filterAdultContent ?? base.filterAdultContent),
       safeSearch: body.safeSearch ?? base.safeSearch,
+      safeDns: body.safeDns ?? base.safeDns,
       blockSocialMedia: body.blockSocialMedia ?? base.blockSocialMedia,
       blockedDomains: cleanDomains(body.blockedDomains),
       allowedDomains: cleanDomains(body.allowedDomains),

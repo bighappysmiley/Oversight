@@ -2,11 +2,14 @@
 
 **A content filter for parents — managed entirely from the web.**
 
-Oversight lets a parent protect a child's **iPhone, iPad, or Android** device
-without installing anything on the parent's own phone. The parent signs up on
-the website, sets the policy in a browser dashboard, and sets up each child
-device by opening a short setup link on it. Protection is locked behind the
-parent's password so a child can't simply remove it.
+Oversight lets a parent protect a child's **iPhone, iPad, Mac, Android device or
+computer** without installing anything on the parent's own phone. The parent
+signs up on the website, sets the policy in a browser dashboard, and sets up each
+child device by opening a short setup link on it — the page detects the device
+and hands over the right installer. Filtering is powered by a **family-safe DNS
+resolver** (blocks adult content on every platform) plus per-platform
+enforcement, and is locked behind the parent's password so a child can't simply
+remove it.
 
 ```
 ┌─────────────────────┐      web dashboard      ┌──────────────────────────┐
@@ -34,7 +37,10 @@ parent's password so a child can't simply remove it.
 | `public/` | The website: landing page, parent dashboard, login/signup, and the device-side enrollment page. Plain HTML/CSS/JS — no build step. |
 | `netlify/functions/` | The API (serverless functions): auth, content policy, devices, enrollment, **iOS profile generation**, and Android sync. |
 | `netlify/lib/` | Shared helpers: storage (Netlify Blobs), password hashing, session tokens, and the `.mobileconfig` builder. |
-| `android/` | The Android **guardian app** (Kotlin): device-admin + DNS-filtering VPN + password-gated removal. See `android/README.md`. |
+| `android/` | The Android **guardian app** (Kotlin): device-admin + DNS-filtering VPN + app limits/downtime + password-gated removal. See `android/README.md`. |
+| `apple/` | A native **iOS + macOS** SwiftUI app (XcodeGen project) you can build in Xcode. See `apple/README.md`. |
+| `public/downloads/` | The Android APK plus Safe-DNS helper scripts for Windows and Linux. |
+| `docs/` | The iOS supervision/MDM guide for advanced controls. |
 | `.github/workflows/` | CI that builds the Android APK. |
 
 ## How it works
@@ -52,16 +58,22 @@ parent's password so a child can't simply remove it.
 
 ### Child device side
 Open the setup link (or `…/enroll` and type the code) on the child's device.
-The page detects the OS:
+The page detects the OS and offers the right installer:
 
-- **iOS / iPadOS** → downloads a configuration profile from
-  `/api/profile`. The profile uses Apple's **BuiltIn web content filter** plus a
-  **profile-removal password**, so the child can't delete it without the
-  parent's password. (Works on a normal, unsupervised device installed via
-  Safari.)
-- **Android** → downloads the **guardian app**. After the parent types the
-  setup code, the app enrolls, becomes a device administrator, and starts a
-  local DNS-filtering VPN. Uninstalling requires the parent's password.
+- **iPhone / iPad** → a configuration profile (`/api/profile?platform=ios`) with
+  Safe DNS, Apple's BuiltIn web content filter, and a **removal password** so the
+  child can't delete it.
+- **Mac** → the same profile (`platform=macos`) with Safe DNS, installed by
+  double-click (removal needs the Mac admin password).
+- **Android** → the **guardian app**: enrolls with the code, becomes a device
+  administrator, runs the DNS-filtering VPN (upstream = Safe DNS) and enforces
+  app limits / downtime. Uninstalling requires the parent's password.
+- **Windows / Linux / Chromebook** → one-click **Safe DNS** setup (a helper
+  script or manual DNS settings) that blocks adult content for the whole computer.
+
+Either way, **Safe DNS** (Cloudflare for Families, `1.1.1.3`) does the
+network-level adult/malware blocking, and the parent's custom block/allow lists
+layer on top.
 
 ### Keeping policy in sync
 - **iOS**: the policy is baked into the profile at install time. Changing the
