@@ -36,6 +36,24 @@ networksetup -listallnetworkservices | tail -n +2 | sed 's/^\*//' | while IFS= r
     networksetup -setdnsservers "$svc" empty 2>/dev/null || true
   fi
 done
+
+# Stop browsers from using their own encrypted DNS (DoH) so they honor system
+# Safe DNS. Chrome/Edge/Brave/Vivaldi read the DnsOverHttpsMode policy; Firefox
+# reads a distribution policies.json. (Safari always uses system DNS.)
+if [ "$SAFEDNS" = "on" ]; then BMODE="off"; else BMODE="automatic"; fi
+for dom in com.google.Chrome com.microsoft.Edge com.brave.Browser com.vivaldi.Vivaldi com.google.Chrome.beta; do
+  defaults write "/Library/Managed Preferences/$dom" DnsOverHttpsMode -string "$BMODE" 2>/dev/null || true
+done
+if [ -d "/Applications/Firefox.app" ]; then
+  mkdir -p "/Applications/Firefox.app/Contents/Resources/distribution" 2>/dev/null || true
+  if [ "$SAFEDNS" = "on" ]; then
+    printf '%s\n' '{ "policies": { "DNSOverHTTPS": { "Enabled": false, "Locked": true } } }' \
+      > "/Applications/Firefox.app/Contents/Resources/distribution/policies.json" 2>/dev/null || true
+  else
+    rm -f "/Applications/Firefox.app/Contents/Resources/distribution/policies.json" 2>/dev/null || true
+  fi
+fi
+
 BODY=$(printf %s "$DATA" | grep '^0\.0\.0\.0 ' || true)
 TMP=$(mktemp)
 sed '/# OVERSIGHT START/,/# OVERSIGHT END/d' /etc/hosts > "$TMP"

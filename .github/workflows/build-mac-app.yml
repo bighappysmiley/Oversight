@@ -24,6 +24,11 @@ jobs:
           mkdir -p "Oversight.app/Contents/Resources"
           cp install-agent.sh "Oversight.app/Contents/Resources/install-agent.sh"
           chmod +x "Oversight.app/Contents/Resources/install-agent.sh"
+          # Ad-hoc sign so the app runs on Apple Silicon and isn't flagged
+          # "damaged" when downloaded. (A Developer ID + notarization removes the
+          # right-click-to-open step entirely — see apple/README.md.)
+          codesign --force --deep --sign - "Oversight.app"
+          codesign --verify --verbose "Oversight.app" || true
           ditto -c -k --sequesterRsrc --keepParent "Oversight.app" "Oversight-Mac.zip"
 
       - name: Upload app artifact
